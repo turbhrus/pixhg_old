@@ -134,3 +134,92 @@ void Plane::rpm_update(void)
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+// True airspeed calculation.
+float Plane::get_true_airspeed()
+{
+	/***************
+	// Uses TAS formula from http://www.mathpages.com/home/kmath282/kmath282.htm
+	const float C = 0.286; // (g-1)/g where g is ratio of specific heats for air.
+	const float R2 = 16.629; // Twice the gas constant.
+	float T, pressure_ratio;
+
+	// pressure ratio (stagnation/static)
+	pressure_ratio = airspeed.get_differential_pressure()/barometer.get_pressure() + 1.f;
+
+	// temperature in Kelvin
+    if( ! airspeed.get_temperature(T)){
+    	T = barometer.get_temperature();
+    }
+	T += 273.15f;
+
+	return sqrt(R2*T/C*(pow(pressure_ratio,C)-1.0f));
+	**************/
+
+	return airspeed.get_EAS2TAS() * airspeed.get_airspeed();
+
+}
+
+
+// Calculate total energy compensated vertical speed.
+void Plane::compensated_vario()
+{
+	static uint32_t t_then=0;
+	float das_dt=0.0;
+	uint32_t t_now;
+
+	/* Damping factor: tuning parameter used to reduce the effect of energy
+	   compensation on the vario signal. */
+	const float te_damping_factor = 0.4;
+
+	// Get vertical acceleration component from the NED
+	Vector3f a, v_ned;
+	a = ahrs.get_accel_ef_blended();
+	// Vertical velocity component
+	if( ! ahrs.get_velocity_NED(v_ned)){
+    	v_ned.zero();
+    }
+
+    // check for new airspeed update
+    t_now = airspeed.last_update_ms();
+    if( t_now > t_then){
+		// airspeed differential
+		airspeed_tas = get_true_airspeed();
+	    airspeed_derivative.update(airspeed_tas, t_now*1000);
+		t_then = t_now;
+    }
+
+	if( a.z != 0.){
+		das_dt = airspeed_derivative.slope() * 1.0e6f;
+		vario_TE = -v_ned.z +
+				(te_damping_factor * airspeed_tas * das_dt / (-a.z));
+
+		debug_dummy1 = airspeed_tas * das_dt / (-a.z);
+		debug_dummy2 = das_dt;
+		debug_dummy3 = (-a.z);
+	}
+}
+
+void Plane::update_audio_vario()
+{
+	int16_t vario_input, vspeed_limit;
+	float delta_s;
+
+	if(xcsoar_data.flying && !xcsoar_data.circling){
+		// speed-to-fly director mode
+		delta_s = airspeed.get_airspeed() - xcsoar_data.speed_to_fly;
+		if(delta_s >= 0.0){
+			vspeed_limit = audio_vario.get_vario_limit_upper();
+		}else{
+			vspeed_limit = -audio_vario.get_vario_limit_lower();
+		}
+		vario_input = (int16_t)( (delta_s/10.0) * vspeed_limit );
+	}else{
+		// ordinary vario mode
+		vario_input = (int16_t)(vario_TE * 100);
+	}
+	audio_vario.update(vario_input);
+}
+
