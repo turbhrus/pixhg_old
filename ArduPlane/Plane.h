@@ -1026,6 +1026,10 @@ private:
     void update_audio_vario();
     float get_true_airspeed();
     void compensated_vario();
+    void send_debugtext(mavlink_channel_t chan);
+    void send_pixhawk_hg_fast(mavlink_channel_t chan);
+    void send_pixhawk_hg_med(mavlink_channel_t chan);
+    void send_pixhawk_hg_slow(mavlink_channel_t chan);
 
 
 public:
