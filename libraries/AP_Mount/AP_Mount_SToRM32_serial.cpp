@@ -133,8 +133,8 @@ void AP_Mount_SToRM32_serial::set_mode(enum MAV_MOUNT_MODE mode)
 // status_msg - called to allow mounts to send their status to GCS using the MOUNT_STATUS message
 void AP_Mount_SToRM32_serial::status_msg(mavlink_channel_t chan)
 {
-    // return target angles as gimbal's actual attitude.
-    mavlink_msg_mount_status_send(chan, 0, 0, _current_angle.y, _current_angle.x, _current_angle.z);
+//    // return target angles as gimbal's actual attitude.
+//    mavlink_msg_mount_status_send(chan, 0, 0, _current_angle.y, _current_angle.x, _current_angle.z);
 }
 
 bool AP_Mount_SToRM32_serial::can_send(bool with_control) {

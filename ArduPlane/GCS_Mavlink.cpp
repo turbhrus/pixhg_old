@@ -437,43 +437,14 @@ static mavlink_hil_state_t last_hil_state;
 // report simulator state
 void Plane::send_simstate(mavlink_channel_t chan)
 {
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    sitl.simstate_send(chan);
-#elif HIL_SUPPORT
-    if (g.hil_mode == 1) {
-        mavlink_msg_simstate_send(chan,
-                                  last_hil_state.roll,
-                                  last_hil_state.pitch,
-                                  last_hil_state.yaw,
-                                  last_hil_state.xacc*0.001f*GRAVITY_MSS,
-                                  last_hil_state.yacc*0.001f*GRAVITY_MSS,
-                                  last_hil_state.zacc*0.001f*GRAVITY_MSS,
-                                  last_hil_state.rollspeed,
-                                  last_hil_state.pitchspeed,
-                                  last_hil_state.yawspeed,
-                                  last_hil_state.lat,
-                                  last_hil_state.lon);
-    }
-#endif
 }
 
 void Plane::send_hwstatus(mavlink_channel_t chan)
 {
-    mavlink_msg_hwstatus_send(
-        chan,
-        hal.analogin->board_voltage()*1000,
-        hal.i2c->lockup_count());
 }
 
 void Plane::send_wind(mavlink_channel_t chan)
 {
-    Vector3f wind = ahrs.wind_estimate();
-    mavlink_msg_wind_send(
-        chan,
-        degrees(atan2f(-wind.y, -wind.x)), // use negative, to give
-                                          // direction wind is coming from
-        wind.length(),
-        wind.z);
 }
 
 /*
@@ -481,12 +452,6 @@ void Plane::send_wind(mavlink_channel_t chan)
  */
 void NOINLINE Plane::send_rpm(mavlink_channel_t chan)
 {
-    if (rpm_sensor.healthy(0) || rpm_sensor.healthy(1)) {
-        mavlink_msg_rpm_send(
-            chan,
-            rpm_sensor.get_rpm(0),
-            rpm_sensor.get_rpm(1));
-    }
 }
 
 /*
@@ -494,73 +459,10 @@ void NOINLINE Plane::send_rpm(mavlink_channel_t chan)
  */
 void Plane::send_pid_tuning(mavlink_channel_t chan)
 {
-    const Vector3f &gyro = ahrs.get_gyro();
-    if (g.gcs_pid_mask & 1) {
-        const DataFlash_Class::PID_Info &pid_info = rollController.get_pid_info();
-        mavlink_msg_pid_tuning_send(chan, PID_TUNING_ROLL, 
-                                    pid_info.desired,
-                                    degrees(gyro.x),
-                                    pid_info.FF,
-                                    pid_info.P,
-                                    pid_info.I,
-                                    pid_info.D);
-        if (!HAVE_PAYLOAD_SPACE(chan, PID_TUNING)) {
-            return;
-        }
-    }
-    if (g.gcs_pid_mask & 2) {
-        const DataFlash_Class::PID_Info &pid_info = pitchController.get_pid_info();
-        mavlink_msg_pid_tuning_send(chan, PID_TUNING_PITCH, 
-                                    pid_info.desired,
-                                    degrees(gyro.y),
-                                    pid_info.FF,
-                                    pid_info.P,
-                                    pid_info.I,
-                                    pid_info.D);
-        if (!HAVE_PAYLOAD_SPACE(chan, PID_TUNING)) {
-            return;
-        }
-    }
-    if (g.gcs_pid_mask & 4) {
-        const DataFlash_Class::PID_Info &pid_info = yawController.get_pid_info();
-        mavlink_msg_pid_tuning_send(chan, PID_TUNING_YAW,
-                                    pid_info.desired,
-                                    degrees(gyro.z),
-                                    pid_info.FF,
-                                    pid_info.P,
-                                    pid_info.I,
-                                    pid_info.D);
-        if (!HAVE_PAYLOAD_SPACE(chan, PID_TUNING)) {
-            return;
-        }
-    }
-    if (g.gcs_pid_mask & 8) {
-        const DataFlash_Class::PID_Info &pid_info = steerController.get_pid_info();
-        mavlink_msg_pid_tuning_send(chan, PID_TUNING_STEER, 
-                                    pid_info.desired,
-                                    degrees(gyro.z),
-                                    pid_info.FF,
-                                    pid_info.P,
-                                    pid_info.I,
-                                    pid_info.D);
-        if (!HAVE_PAYLOAD_SPACE(chan, PID_TUNING)) {
-            return;
-        }
-    }
 }
 
 void Plane::send_rangefinder(mavlink_channel_t chan)
 {
-#if RANGEFINDER_ENABLED == ENABLED
-    if (!rangefinder.has_data()) {
-        // no sonar to report
-        return;
-    }
-    mavlink_msg_rangefinder_send(
-        chan,
-        rangefinder.distance_cm() * 0.01f,
-        rangefinder.voltage_mv()*0.001f);
-#endif
 }
 
 void Plane::send_current_waypoint(mavlink_channel_t chan)
@@ -624,8 +526,8 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         break;
 
     case MSG_EXTENDED_STATUS2:
-        CHECK_PAYLOAD_SIZE(MEMINFO);
-        plane.gcs[chan-MAVLINK_COMM_0].send_meminfo();
+//        CHECK_PAYLOAD_SIZE(MEMINFO);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_meminfo();
         break;
 
     case MSG_ATTITUDE:
@@ -695,8 +597,8 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         break;
 
     case MSG_RAW_IMU3:
-        CHECK_PAYLOAD_SIZE(SENSOR_OFFSETS);
-        plane.gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(plane.ins, plane.compass, plane.barometer);
+//        CHECK_PAYLOAD_SIZE(SENSOR_OFFSETS);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_sensor_offsets(plane.ins, plane.compass, plane.barometer);
         break;
 
     case MSG_CURRENT_WAYPOINT:
@@ -721,83 +623,83 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
 
 #if GEOFENCE_ENABLED == ENABLED
     case MSG_FENCE_STATUS:
-        CHECK_PAYLOAD_SIZE(FENCE_STATUS);
-        plane.send_fence_status(chan);
+//        CHECK_PAYLOAD_SIZE(FENCE_STATUS);
+//        plane.send_fence_status(chan);
         break;
 #endif
 
     case MSG_AHRS:
-        CHECK_PAYLOAD_SIZE(AHRS);
-        plane.gcs[chan-MAVLINK_COMM_0].send_ahrs(plane.ahrs);
+//        CHECK_PAYLOAD_SIZE(AHRS);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_ahrs(plane.ahrs);
         break;
 
     case MSG_SIMSTATE:
-        CHECK_PAYLOAD_SIZE(SIMSTATE);
-        plane.send_simstate(chan);
-        CHECK_PAYLOAD_SIZE2(AHRS2);
-        plane.gcs[chan-MAVLINK_COMM_0].send_ahrs2(plane.ahrs);
+//        CHECK_PAYLOAD_SIZE(SIMSTATE);
+//        plane.send_simstate(chan);
+//        CHECK_PAYLOAD_SIZE2(AHRS2);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_ahrs2(plane.ahrs);
         break;
 
     case MSG_HWSTATUS:
-        CHECK_PAYLOAD_SIZE(HWSTATUS);
-        plane.send_hwstatus(chan);
+//        CHECK_PAYLOAD_SIZE(HWSTATUS);
+//        plane.send_hwstatus(chan);
         break;
 
     case MSG_RANGEFINDER:
-        CHECK_PAYLOAD_SIZE(RANGEFINDER);
-        plane.send_rangefinder(chan);
+//        CHECK_PAYLOAD_SIZE(RANGEFINDER);
+//        plane.send_rangefinder(chan);
         break;
 
     case MSG_TERRAIN:
-#if AP_TERRAIN_AVAILABLE
-        CHECK_PAYLOAD_SIZE(TERRAIN_REQUEST);
-        plane.terrain.send_request(chan);
-#endif
+//#if AP_TERRAIN_AVAILABLE
+//        CHECK_PAYLOAD_SIZE(TERRAIN_REQUEST);
+//        plane.terrain.send_request(chan);
+//#endif
         break;
 
     case MSG_CAMERA_FEEDBACK:
-#if CAMERA == ENABLED
-        CHECK_PAYLOAD_SIZE(CAMERA_FEEDBACK);
-        plane.camera.send_feedback(chan, plane.gps, plane.ahrs, plane.current_loc);
-#endif
+//#if CAMERA == ENABLED
+//        CHECK_PAYLOAD_SIZE(CAMERA_FEEDBACK);
+//        plane.camera.send_feedback(chan, plane.gps, plane.ahrs, plane.current_loc);
+//#endif
         break;
 
     case MSG_BATTERY2:
-        CHECK_PAYLOAD_SIZE(BATTERY2);
-        plane.gcs[chan-MAVLINK_COMM_0].send_battery2(plane.battery);
+//        CHECK_PAYLOAD_SIZE(BATTERY2);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_battery2(plane.battery);
         break;
 
     case MSG_WIND:
-        CHECK_PAYLOAD_SIZE(WIND);
-        plane.send_wind(chan);
+//        CHECK_PAYLOAD_SIZE(WIND);
+//        plane.send_wind(chan);
         break;
 
     case MSG_MOUNT_STATUS:
-#if MOUNT == ENABLED
-        CHECK_PAYLOAD_SIZE(MOUNT_STATUS);
-        plane.camera_mount.status_msg(chan);
-#endif // MOUNT == ENABLED
+//#if MOUNT == ENABLED
+//        CHECK_PAYLOAD_SIZE(MOUNT_STATUS);
+//        plane.camera_mount.status_msg(chan);
+//#endif // MOUNT == ENABLED
         break;
 
     case MSG_OPTICAL_FLOW:
-#if OPTFLOW == ENABLED
-        CHECK_PAYLOAD_SIZE(OPTICAL_FLOW);
-        plane.gcs[chan-MAVLINK_COMM_0].send_opticalflow(plane.ahrs, plane.optflow);
-#endif
+//#if OPTFLOW == ENABLED
+//        CHECK_PAYLOAD_SIZE(OPTICAL_FLOW);
+//        plane.gcs[chan-MAVLINK_COMM_0].send_opticalflow(plane.ahrs, plane.optflow);
+//#endif
         break;
 
     case MSG_EKF_STATUS_REPORT:
-#if AP_AHRS_NAVEKF_AVAILABLE
-        CHECK_PAYLOAD_SIZE(EKF_STATUS_REPORT);
-        plane.ahrs.send_ekf_status_report(chan);
-#endif
+//#if AP_AHRS_NAVEKF_AVAILABLE
+//        CHECK_PAYLOAD_SIZE(EKF_STATUS_REPORT);
+//        plane.ahrs.send_ekf_status_report(chan);
+//#endif
         break;
 
     case MSG_GIMBAL_REPORT:
-#if MOUNT == ENABLED
-        CHECK_PAYLOAD_SIZE(GIMBAL_REPORT);
-        plane.camera_mount.send_gimbal_report(chan);
-#endif
+//#if MOUNT == ENABLED
+//        CHECK_PAYLOAD_SIZE(GIMBAL_REPORT);
+//        plane.camera_mount.send_gimbal_report(chan);
+//#endif
         break;
 
     case MSG_RETRY_DEFERRED:
@@ -808,18 +710,18 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         break;
 
     case MSG_PID_TUNING:
-        CHECK_PAYLOAD_SIZE(PID_TUNING);
-        plane.send_pid_tuning(chan);
+//        CHECK_PAYLOAD_SIZE(PID_TUNING);
+//        plane.send_pid_tuning(chan);
         break;
 
     case MSG_VIBRATION:
-        CHECK_PAYLOAD_SIZE(VIBRATION);
-        send_vibration(plane.ins);
+//        CHECK_PAYLOAD_SIZE(VIBRATION);
+//        send_vibration(plane.ins);
         break;
 
     case MSG_RPM:
-        CHECK_PAYLOAD_SIZE(RPM);
-        plane.send_rpm(chan);
+//        CHECK_PAYLOAD_SIZE(RPM);
+//        plane.send_rpm(chan);
         break;
 
     case MSG_MISSION_ITEM_REACHED:
@@ -828,13 +730,13 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         break;
 
     case MSG_MAG_CAL_PROGRESS:
-        CHECK_PAYLOAD_SIZE(MAG_CAL_PROGRESS);
-        plane.compass.send_mag_cal_progress(chan);
+//        CHECK_PAYLOAD_SIZE(MAG_CAL_PROGRESS);
+//        plane.compass.send_mag_cal_progress(chan);
         break;
 
     case MSG_MAG_CAL_REPORT:
-        CHECK_PAYLOAD_SIZE(MAG_CAL_REPORT);
-        plane.compass.send_mag_cal_report(chan);
+//        CHECK_PAYLOAD_SIZE(MAG_CAL_REPORT);
+//        plane.compass.send_mag_cal_report(chan);
         break;
     }
     return true;
@@ -1465,46 +1367,46 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             break;
         }
 
-        case MAV_CMD_DO_AUTOTUNE_ENABLE:
-            // param1 : enable/disable
-            plane.autotune_enable(!is_zero(packet.param1));
-            break;
+//        case MAV_CMD_DO_AUTOTUNE_ENABLE:
+//            // param1 : enable/disable
+//            plane.autotune_enable(!is_zero(packet.param1));
+//            break;
 
-        case MAV_CMD_DO_START_MAG_CAL:
-        case MAV_CMD_DO_ACCEPT_MAG_CAL:
-        case MAV_CMD_DO_CANCEL_MAG_CAL:
-            result = plane.compass.handle_mag_cal_command(packet);
-            break;
+//        case MAV_CMD_DO_START_MAG_CAL:
+//        case MAV_CMD_DO_ACCEPT_MAG_CAL:
+//        case MAV_CMD_DO_CANCEL_MAG_CAL:
+//            result = plane.compass.handle_mag_cal_command(packet);
+//            break;
 
 #if PARACHUTE == ENABLED
         case MAV_CMD_DO_PARACHUTE:
-            // configure or release parachute
-            result = MAV_RESULT_ACCEPTED;
-            switch ((uint16_t)packet.param1) {
-                case PARACHUTE_DISABLE:
-                    plane.parachute.enabled(false);
-                    break;
-                case PARACHUTE_ENABLE:
-                    plane.parachute.enabled(true);
-                    break;
-                case PARACHUTE_RELEASE:
-                    // treat as a manual release which performs some additional check of altitude
-                    if (plane.parachute.released()) {
-                        plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Parachute already released");
-                        result = MAV_RESULT_FAILED;
-                    } else if (!plane.parachute.enabled()) {
-                        plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Parachute not enabled");
-                        result = MAV_RESULT_FAILED;
-                    } else {
-                        if (!plane.parachute_manual_release()) {
-                            result = MAV_RESULT_FAILED;
-                        }
-                    }
-                    break;
-                default:
-                    result = MAV_RESULT_FAILED;
-                    break;
-            }
+//            // configure or release parachute
+//            result = MAV_RESULT_ACCEPTED;
+//            switch ((uint16_t)packet.param1) {
+//                case PARACHUTE_DISABLE:
+//                    plane.parachute.enabled(false);
+//                    break;
+//                case PARACHUTE_ENABLE:
+//                    plane.parachute.enabled(true);
+//                    break;
+//                case PARACHUTE_RELEASE:
+//                    // treat as a manual release which performs some additional check of altitude
+//                    if (plane.parachute.released()) {
+//                        plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Parachute already released");
+//                        result = MAV_RESULT_FAILED;
+//                    } else if (!plane.parachute.enabled()) {
+//                        plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Parachute not enabled");
+//                        result = MAV_RESULT_FAILED;
+//                    } else {
+//                        if (!plane.parachute_manual_release()) {
+//                            result = MAV_RESULT_FAILED;
+//                        }
+//                    }
+//                    break;
+//                default:
+//                    result = MAV_RESULT_FAILED;
+//                    break;
+//            }
             break;
 #endif
 
@@ -1611,87 +1513,87 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 
 #if GEOFENCE_ENABLED == ENABLED
     // receive a fence point from GCS and store in EEPROM
-    case MAVLINK_MSG_ID_FENCE_POINT: {
-        mavlink_fence_point_t packet;
-        mavlink_msg_fence_point_decode(msg, &packet);
-        if (plane.g.fence_action != FENCE_ACTION_NONE) {
-            send_text(MAV_SEVERITY_WARNING,"Fencing must be disabled");
-        } else if (packet.count != plane.g.fence_total) {
-            send_text(MAV_SEVERITY_WARNING,"Bad fence point");
-        } else if (fabsf(packet.lat) > 90.0f || fabsf(packet.lng) > 180.0f) {
-            send_text(MAV_SEVERITY_WARNING,"Invalid fence point, lat or lng too large");
-        } else {
-            Vector2l point;
-            point.x = packet.lat*1.0e7f;
-            point.y = packet.lng*1.0e7f;
-            plane.set_fence_point_with_index(point, packet.idx);
-        }
-        break;
-    }
+//    case MAVLINK_MSG_ID_FENCE_POINT: {
+//        mavlink_fence_point_t packet;
+//        mavlink_msg_fence_point_decode(msg, &packet);
+//        if (plane.g.fence_action != FENCE_ACTION_NONE) {
+//            send_text(MAV_SEVERITY_WARNING,"Fencing must be disabled");
+//        } else if (packet.count != plane.g.fence_total) {
+//            send_text(MAV_SEVERITY_WARNING,"Bad fence point");
+//        } else if (fabsf(packet.lat) > 90.0f || fabsf(packet.lng) > 180.0f) {
+//            send_text(MAV_SEVERITY_WARNING,"Invalid fence point, lat or lng too large");
+//        } else {
+//            Vector2l point;
+//            point.x = packet.lat*1.0e7f;
+//            point.y = packet.lng*1.0e7f;
+//            plane.set_fence_point_with_index(point, packet.idx);
+//        }
+//        break;
+//    }
 
-    // send a fence point to GCS
-    case MAVLINK_MSG_ID_FENCE_FETCH_POINT: {
-        mavlink_fence_fetch_point_t packet;
-        mavlink_msg_fence_fetch_point_decode(msg, &packet);
-        if (packet.idx >= plane.g.fence_total) {
-            send_text(MAV_SEVERITY_WARNING,"Bad fence point");
-        } else {
-            Vector2l point = plane.get_fence_point_with_index(packet.idx);
-            mavlink_msg_fence_point_send_buf(msg, chan, msg->sysid, msg->compid, packet.idx, plane.g.fence_total,
-                                             point.x*1.0e-7f, point.y*1.0e-7f);
-        }
-        break;
-    }
+//    // send a fence point to GCS
+//    case MAVLINK_MSG_ID_FENCE_FETCH_POINT: {
+//        mavlink_fence_fetch_point_t packet;
+//        mavlink_msg_fence_fetch_point_decode(msg, &packet);
+//        if (packet.idx >= plane.g.fence_total) {
+//            send_text(MAV_SEVERITY_WARNING,"Bad fence point");
+//        } else {
+//            Vector2l point = plane.get_fence_point_with_index(packet.idx);
+//            mavlink_msg_fence_point_send_buf(msg, chan, msg->sysid, msg->compid, packet.idx, plane.g.fence_total,
+//                                             point.x*1.0e-7f, point.y*1.0e-7f);
+//        }
+//        break;
+//    }
 #endif // GEOFENCE_ENABLED
 
     // receive a rally point from GCS and store in EEPROM
-    case MAVLINK_MSG_ID_RALLY_POINT: {
-        mavlink_rally_point_t packet;
-        mavlink_msg_rally_point_decode(msg, &packet);
-        
-        if (packet.idx >= plane.rally.get_rally_total() || 
-            packet.idx >= plane.rally.get_rally_max()) {
-            send_text(MAV_SEVERITY_WARNING,"Bad rally point message ID");
-            break;
-        }
-
-        if (packet.count != plane.rally.get_rally_total()) {
-            send_text(MAV_SEVERITY_WARNING,"Bad rally point message count");
-            break;
-        }
-
-        RallyLocation rally_point;
-        rally_point.lat = packet.lat;
-        rally_point.lng = packet.lng;
-        rally_point.alt = packet.alt;
-        rally_point.break_alt = packet.break_alt;
-        rally_point.land_dir = packet.land_dir;
-        rally_point.flags = packet.flags;
-        plane.rally.set_rally_point_with_index(packet.idx, rally_point);
-        break;
-    }
+//    case MAVLINK_MSG_ID_RALLY_POINT: {
+//        mavlink_rally_point_t packet;
+//        mavlink_msg_rally_point_decode(msg, &packet);
+//
+//        if (packet.idx >= plane.rally.get_rally_total() ||
+//            packet.idx >= plane.rally.get_rally_max()) {
+//            send_text(MAV_SEVERITY_WARNING,"Bad rally point message ID");
+//            break;
+//        }
+//
+//        if (packet.count != plane.rally.get_rally_total()) {
+//            send_text(MAV_SEVERITY_WARNING,"Bad rally point message count");
+//            break;
+//        }
+//
+//        RallyLocation rally_point;
+//        rally_point.lat = packet.lat;
+//        rally_point.lng = packet.lng;
+//        rally_point.alt = packet.alt;
+//        rally_point.break_alt = packet.break_alt;
+//        rally_point.land_dir = packet.land_dir;
+//        rally_point.flags = packet.flags;
+//        plane.rally.set_rally_point_with_index(packet.idx, rally_point);
+//        break;
+//    }
 
     //send a rally point to the GCS
-    case MAVLINK_MSG_ID_RALLY_FETCH_POINT: {
-        mavlink_rally_fetch_point_t packet;
-        mavlink_msg_rally_fetch_point_decode(msg, &packet);
-        if (packet.idx > plane.rally.get_rally_total()) {
-            send_text(MAV_SEVERITY_WARNING, "Bad rally point index");
-            break;
-        }
-        RallyLocation rally_point;
-        if (!plane.rally.get_rally_point_with_index(packet.idx, rally_point)) {
-            send_text(MAV_SEVERITY_WARNING, "Failed to set rally point");
-            break;
-        }
-
-        mavlink_msg_rally_point_send_buf(msg,
-                                         chan, msg->sysid, msg->compid, packet.idx, 
-                                         plane.rally.get_rally_total(), rally_point.lat, rally_point.lng, 
-                                         rally_point.alt, rally_point.break_alt, rally_point.land_dir, 
-                                         rally_point.flags);
-        break;
-    }    
+//    case MAVLINK_MSG_ID_RALLY_FETCH_POINT: {
+//        mavlink_rally_fetch_point_t packet;
+//        mavlink_msg_rally_fetch_point_decode(msg, &packet);
+//        if (packet.idx > plane.rally.get_rally_total()) {
+//            send_text(MAV_SEVERITY_WARNING, "Bad rally point index");
+//            break;
+//        }
+//        RallyLocation rally_point;
+//        if (!plane.rally.get_rally_point_with_index(packet.idx, rally_point)) {
+//            send_text(MAV_SEVERITY_WARNING, "Failed to set rally point");
+//            break;
+//        }
+//
+//        mavlink_msg_rally_point_send_buf(msg,
+//                                         chan, msg->sysid, msg->compid, packet.idx,
+//                                         plane.rally.get_rally_total(), rally_point.lat, rally_point.lng,
+//                                         rally_point.alt, rally_point.break_alt, rally_point.land_dir,
+//                                         rally_point.flags);
+//        break;
+//    }
 
     case MAVLINK_MSG_ID_PARAM_SET:
     {
@@ -1699,13 +1601,13 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_GIMBAL_REPORT:
-    {
-#if MOUNT == ENABLED
-        handle_gimbal_report(plane.camera_mount, msg);
-#endif
-        break;
-    }
+//    case MAVLINK_MSG_ID_GIMBAL_REPORT:
+//    {
+//#if MOUNT == ENABLED
+//        handle_gimbal_report(plane.camera_mount, msg);
+//#endif
+//        break;
+//    }
 
     case MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE:
     {
@@ -1804,42 +1706,42 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 
 #if CAMERA == ENABLED
     //deprecated. Use MAV_CMD_DO_DIGICAM_CONFIGURE
-    case MAVLINK_MSG_ID_DIGICAM_CONFIGURE:
-    {
-        break;
-    }
+//    case MAVLINK_MSG_ID_DIGICAM_CONFIGURE:
+//    {
+//        break;
+//    }
 
     //deprecated. Use MAV_CMD_DO_DIGICAM_CONTROL
-    case MAVLINK_MSG_ID_DIGICAM_CONTROL:
-    {
-        plane.camera.control_msg(msg);
-        plane.log_picture();
-        break;
-    }
+//    case MAVLINK_MSG_ID_DIGICAM_CONTROL:
+//    {
+//        plane.camera.control_msg(msg);
+//        plane.log_picture();
+//        break;
+//    }
 #endif // CAMERA == ENABLED
 
-#if MOUNT == ENABLED
-    //deprecated. Use MAV_CMD_DO_MOUNT_CONFIGURE
-    case MAVLINK_MSG_ID_MOUNT_CONFIGURE:
-    {
-        plane.camera_mount.configure_msg(msg);
-        break;
-    }
+//#if MOUNT == ENABLED
+//    //deprecated. Use MAV_CMD_DO_MOUNT_CONFIGURE
+//    case MAVLINK_MSG_ID_MOUNT_CONFIGURE:
+//    {
+//        plane.camera_mount.configure_msg(msg);
+//        break;
+//    }
+//
+//    //deprecated. Use MAV_CMD_DO_MOUNT_CONTROL
+//    case MAVLINK_MSG_ID_MOUNT_CONTROL:
+//    {
+//        plane.camera_mount.control_msg(msg);
+//        break;
+//    }
+//#endif // MOUNT == ENABLED
 
-    //deprecated. Use MAV_CMD_DO_MOUNT_CONTROL
-    case MAVLINK_MSG_ID_MOUNT_CONTROL:
-    {
-        plane.camera_mount.control_msg(msg);
-        break;
-    }
-#endif // MOUNT == ENABLED
-
-    case MAVLINK_MSG_ID_RADIO:
-    case MAVLINK_MSG_ID_RADIO_STATUS:
-    {
-        handle_radio_status(msg, plane.DataFlash, plane.should_log(MASK_LOG_PM));
-        break;
-    }
+//    case MAVLINK_MSG_ID_RADIO:
+//    case MAVLINK_MSG_ID_RADIO_STATUS:
+//    {
+//        handle_radio_status(msg, plane.DataFlash, plane.should_log(MASK_LOG_PM));
+//        break;
+//    }
 
     case MAVLINK_MSG_ID_LOG_REQUEST_DATA:
     case MAVLINK_MSG_ID_LOG_ERASE:
@@ -1872,13 +1774,13 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 #endif
         break;
 
-    case MAVLINK_MSG_ID_AUTOPILOT_VERSION_REQUEST:
-        plane.gcs[chan-MAVLINK_COMM_0].send_autopilot_version(FIRMWARE_VERSION);
-        break;
+//    case MAVLINK_MSG_ID_AUTOPILOT_VERSION_REQUEST:
+//        plane.gcs[chan-MAVLINK_COMM_0].send_autopilot_version(FIRMWARE_VERSION);
+//        break;
 
-    case MAVLINK_MSG_ID_REMOTE_LOG_BLOCK_STATUS:
-        plane.DataFlash.remote_log_block_status_msg(chan, msg);
-        break;
+//    case MAVLINK_MSG_ID_REMOTE_LOG_BLOCK_STATUS:
+//        plane.DataFlash.remote_log_block_status_msg(chan, msg);
+//        break;
 
     case MAVLINK_MSG_ID_SET_HOME_POSITION:
     {
@@ -2042,14 +1944,14 @@ void Plane::gcs_send_text_fmt(MAV_SEVERITY severity, const char *fmt, ...)
  */
 void Plane::gcs_send_airspeed_calibration(const Vector3f &vg)
 {
-    for (uint8_t i=0; i<num_gcs; i++) {
-        if (gcs[i].initialised) {
-            if (comm_get_txspace((mavlink_channel_t)i) - MAVLINK_NUM_NON_PAYLOAD_BYTES >= 
-                MAVLINK_MSG_ID_AIRSPEED_AUTOCAL_LEN) {
-                airspeed.log_mavlink_send((mavlink_channel_t)i, vg);
-            }
-        }
-    }
+//    for (uint8_t i=0; i<num_gcs; i++) {
+//        if (gcs[i].initialised) {
+//            if (comm_get_txspace((mavlink_channel_t)i) - MAVLINK_NUM_NON_PAYLOAD_BYTES >=
+//                MAVLINK_MSG_ID_AIRSPEED_AUTOCAL_LEN) {
+//                airspeed.log_mavlink_send((mavlink_channel_t)i, vg);
+//            }
+//        }
+//    }
 }
 
 /**

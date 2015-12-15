@@ -29,19 +29,19 @@ void AP_Mount_Backend::set_roi_target(const struct Location &target_loc)
 // configure_msg - process MOUNT_CONFIGURE messages received from GCS.  deprecated.
 void AP_Mount_Backend::configure_msg(mavlink_message_t* msg)
 {
-    __mavlink_mount_configure_t packet;
-    mavlink_msg_mount_configure_decode(msg, &packet);
-
-    set_mode((MAV_MOUNT_MODE)packet.mount_mode);
+//    __mavlink_mount_configure_t packet;
+//    mavlink_msg_mount_configure_decode(msg, &packet);
+//
+//    set_mode((MAV_MOUNT_MODE)packet.mount_mode);
 }
 
 // control_msg - process MOUNT_CONTROL messages received from GCS. deprecated.
 void AP_Mount_Backend::control_msg(mavlink_message_t *msg)
 {
-    __mavlink_mount_control_t packet;
-    mavlink_msg_mount_control_decode(msg, &packet);
-
-    control((int32_t)packet.input_a, (int32_t)packet.input_b, (int32_t)packet.input_c, _state._mode);
+//    __mavlink_mount_control_t packet;
+//    mavlink_msg_mount_control_decode(msg, &packet);
+//
+//    control((int32_t)packet.input_a, (int32_t)packet.input_b, (int32_t)packet.input_c, _state._mode);
 }
 
 void AP_Mount_Backend::control(int32_t pitch_or_lat, int32_t roll_or_lon, int32_t yaw_or_alt, MAV_MOUNT_MODE mount_mode)

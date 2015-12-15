@@ -55,8 +55,9 @@ uint16_t DataFlash_MAVLink::bufferspace_available() {
 }
 
 uint8_t DataFlash_MAVLink::remaining_space_in_current_block() {
-    // note that _current_block *could* be NULL ATM.
-    return (MAVLINK_MSG_REMOTE_LOG_DATA_BLOCK_FIELD_DATA_LEN - _latest_block_len);
+//    // note that _current_block *could* be NULL ATM.
+//    return (MAVLINK_MSG_REMOTE_LOG_DATA_BLOCK_FIELD_DATA_LEN - _latest_block_len);
+	return 0;
 }
 
 void DataFlash_MAVLink::enqueue_block(dm_block_queue_t &queue, struct dm_block *block)
@@ -145,7 +146,7 @@ bool DataFlash_MAVLink::WritePrioritisedBlock(const void *pBuffer, uint16_t size
         memcpy(&(_current_block->buf[_latest_block_len]), &((const uint8_t *)pBuffer)[copied], to_copy);
         copied += to_copy;
         _latest_block_len += to_copy;
-        if (_latest_block_len == MAVLINK_MSG_REMOTE_LOG_DATA_BLOCK_FIELD_DATA_LEN) {
+        if (_latest_block_len == 200) {
             //block full, mark it to be sent:
             enqueue_block(_blocks_pending, _current_block);
             _current_block = next_block();
@@ -208,58 +209,58 @@ void DataFlash_MAVLink::handle_ack(mavlink_channel_t chan,
     if (!_initialised) {
         return;
     }
-    if(seqno == MAV_REMOTE_LOG_DATA_BLOCK_STOP) {
-        Debug("Received stop-logging packet");
-        if (_sending_to_client) {
-            _sending_to_client = false;
-            _last_response_time = AP_HAL::millis();
-        }
-        return;
-    }
-    if(seqno == MAV_REMOTE_LOG_DATA_BLOCK_START) {
-        if (!_sending_to_client) {
-            Debug("Starting New Log");
-            free_all_blocks();
-            // _current_block = next_block();
-            // if (_current_block == NULL) {
-            //     Debug("No free blocks?!!!\n");
-            //     return;
-            // }
-            stats_init();
-            _sending_to_client = true;
-            _target_system_id = msg->sysid;
-            _target_component_id = msg->compid;
-            _chan = chan;
-            _next_seq_num = 0;
-            _startup_messagewriter->reset();
-            _last_response_time = AP_HAL::millis();
-            Debug("Target: (%u/%u)", _target_system_id, _target_component_id);
-        }
-        return;
-    }
-
-    // check SENT blocks (VERY likely to be first on the list):
-    if (free_seqno_from_queue(seqno, _blocks_sent)) {
-        // celebrate
-        _last_response_time = AP_HAL::millis();
-    } else if(free_seqno_from_queue(seqno, _blocks_retry)) {
-        // party
-        _last_response_time = AP_HAL::millis();
-    } else {
-        // probably acked already and put on the free list.
-    }
+//    if(seqno == MAV_REMOTE_LOG_DATA_BLOCK_STOP) {
+//        Debug("Received stop-logging packet");
+//        if (_sending_to_client) {
+//            _sending_to_client = false;
+//            _last_response_time = AP_HAL::millis();
+//        }
+//        return;
+//    }
+//    if(seqno == MAV_REMOTE_LOG_DATA_BLOCK_START) {
+//        if (!_sending_to_client) {
+//            Debug("Starting New Log");
+//            free_all_blocks();
+//            // _current_block = next_block();
+//            // if (_current_block == NULL) {
+//            //     Debug("No free blocks?!!!\n");
+//            //     return;
+//            // }
+//            stats_init();
+//            _sending_to_client = true;
+//            _target_system_id = msg->sysid;
+//            _target_component_id = msg->compid;
+//            _chan = chan;
+//            _next_seq_num = 0;
+//            _startup_messagewriter->reset();
+//            _last_response_time = AP_HAL::millis();
+//            Debug("Target: (%u/%u)", _target_system_id, _target_component_id);
+//        }
+//        return;
+//    }
+//
+//    // check SENT blocks (VERY likely to be first on the list):
+//    if (free_seqno_from_queue(seqno, _blocks_sent)) {
+//        // celebrate
+//        _last_response_time = AP_HAL::millis();
+//    } else if(free_seqno_from_queue(seqno, _blocks_retry)) {
+//        // party
+//        _last_response_time = AP_HAL::millis();
+//    } else {
+//        // probably acked already and put on the free list.
+//    }
 }
 
 void DataFlash_MAVLink::remote_log_block_status_msg(mavlink_channel_t chan,
                                                     mavlink_message_t* msg)
 {
-    mavlink_remote_log_block_status_t packet;
-    mavlink_msg_remote_log_block_status_decode(msg, &packet);
-    if(packet.status == 0){
-        handle_retry(packet.seqno);
-    } else{
-        handle_ack(chan, msg, packet.seqno);
-    }
+//    mavlink_remote_log_block_status_t packet;
+//    mavlink_msg_remote_log_block_status_decode(msg, &packet);
+//    if(packet.status == 0){
+//        handle_retry(packet.seqno);
+//    } else{
+//        handle_ack(chan, msg, packet.seqno);
+//    }
 }
 
 void DataFlash_MAVLink::handle_retry(uint32_t seqno)
@@ -517,58 +518,58 @@ void DataFlash_MAVLink::periodic_fullrate(uint32_t now)
 //TODO: handle full txspace properly
 bool DataFlash_MAVLink::send_log_block(struct dm_block &block)
 {
-    mavlink_channel_t chan = mavlink_channel_t(_chan - MAVLINK_COMM_0);
-    if (!_initialised) {
-       return false;
-    }
-    if (comm_get_txspace(chan) < MAVLINK_MSG_ID_REMOTE_LOG_DATA_BLOCK_LEN) {
-        return false;
-    }
-    if (comm_get_txspace(chan) < 500) {
-        return false;
-    }
-#if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
-    if (rand() < 0.1) {
-        return false;
-    }
-#endif
-    
-#if DF_MAVLINK_DISABLE_INTERRUPTS
-    irqstate_t istate = irqsave();
-#endif
-
-// DM_packing: 267039 events, 0 overruns, 8440834us elapsed, 31us avg, min 31us max 32us 0.488us rms
-    hal.util->perf_begin(_perf_packing);
-
-    mavlink_message_t msg;
-    mavlink_status_t *chan_status = mavlink_get_channel_status(chan);
-    uint8_t saved_seq = chan_status->current_tx_seq;
-    chan_status->current_tx_seq = mavlink_seq++;
-    // Debug("Sending block (%d)", block.seqno);
-    mavlink_msg_remote_log_data_block_pack(mavlink_system.sysid,
-                                           MAV_COMP_ID_LOG,
-                                           &msg,
-                                           _target_system_id,
-                                           _target_component_id,
-                                           block.seqno,
-                                           block.buf);
-
-    hal.util->perf_end(_perf_packing);
-
-#if DF_MAVLINK_DISABLE_INTERRUPTS
-    irqrestore(istate);
-#endif
-
-    block.last_sent = AP_HAL::millis();
-    chan_status->current_tx_seq = saved_seq;
-
-    // _last_send_time is set even if we fail to send the packet; if
-    // the txspace is repeatedly chockas we should not add to the
-    // problem and stop attempting to log
-    _last_send_time = AP_HAL::millis();
-
-    _mavlink_resend_uart(chan, &msg);
-
-    return true;
+//    mavlink_channel_t chan = mavlink_channel_t(_chan - MAVLINK_COMM_0);
+//    if (!_initialised) {
+//       return false;
+//    }
+//    if (comm_get_txspace(chan) < 200) {
+//        return false;
+//    }
+//    if (comm_get_txspace(chan) < 500) {
+//        return false;
+//    }
+//#if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
+//    if (rand() < 0.1) {
+//        return false;
+//    }
+//#endif
+//
+//#if DF_MAVLINK_DISABLE_INTERRUPTS
+//    irqstate_t istate = irqsave();
+//#endif
+//
+//// DM_packing: 267039 events, 0 overruns, 8440834us elapsed, 31us avg, min 31us max 32us 0.488us rms
+//    hal.util->perf_begin(_perf_packing);
+//
+//    mavlink_message_t msg;
+//    mavlink_status_t *chan_status = mavlink_get_channel_status(chan);
+//    uint8_t saved_seq = chan_status->current_tx_seq;
+//    chan_status->current_tx_seq = mavlink_seq++;
+//    // Debug("Sending block (%d)", block.seqno);
+//    mavlink_msg_remote_log_data_block_pack(mavlink_system.sysid,
+//                                           MAV_COMP_ID_LOG,
+//                                           &msg,
+//                                           _target_system_id,
+//                                           _target_component_id,
+//                                           block.seqno,
+//                                           block.buf);
+//
+//    hal.util->perf_end(_perf_packing);
+//
+//#if DF_MAVLINK_DISABLE_INTERRUPTS
+//    irqrestore(istate);
+//#endif
+//
+//    block.last_sent = AP_HAL::millis();
+//    chan_status->current_tx_seq = saved_seq;
+//
+//    // _last_send_time is set even if we fail to send the packet; if
+//    // the txspace is repeatedly chockas we should not add to the
+//    // problem and stop attempting to log
+//    _last_send_time = AP_HAL::millis();
+//
+//    _mavlink_resend_uart(chan, &msg);
+//
+//    return true;
 }
 #endif

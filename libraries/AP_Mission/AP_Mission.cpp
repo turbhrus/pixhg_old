@@ -687,10 +687,10 @@ bool AP_Mission::mavlink_to_mission_cmd(const mavlink_mission_item_t& packet, AP
         cmd.p1 = packet.param1;                         // normal=0 inverted=1
         break;
 
-    case MAV_CMD_DO_GRIPPER:                            // MAV ID: 211
-        cmd.content.gripper.num = packet.param1;        // gripper number
-        cmd.content.gripper.action = packet.param2;     // action 0=release, 1=grab.  See GRIPPER_ACTION enum
-        break;
+//    case MAV_CMD_DO_GRIPPER:                            // MAV ID: 211
+//        cmd.content.gripper.num = packet.param1;        // gripper number
+//        cmd.content.gripper.action = packet.param2;     // action 0=release, 1=grab.  See GRIPPER_ACTION enum
+//        break;
 
     case MAV_CMD_DO_GUIDED_LIMITS:                      // MAV ID: 222
         cmd.p1 = packet.param1;                         // max time in seconds the external controller will be allowed to control the vehicle
@@ -699,15 +699,15 @@ bool AP_Mission::mavlink_to_mission_cmd(const mavlink_mission_item_t& packet, AP
         cmd.content.guided_limits.horiz_max = packet.param4;// max horizontal distance the vehicle can move before the command will be aborted.  0 for no horizontal limit
         break;
 
-    case MAV_CMD_DO_AUTOTUNE_ENABLE:                    // MAV ID: 211
-        cmd.p1 = packet.param1;                         // disable=0 enable=1
-        break;
+//    case MAV_CMD_DO_AUTOTUNE_ENABLE:                    // MAV ID: 211
+//        cmd.p1 = packet.param1;                         // disable=0 enable=1
+//        break;
 
-    case MAV_CMD_NAV_ALTITUDE_WAIT:                     // MAV ID: 83
-        cmd.content.altitude_wait.altitude = packet.param1;
-        cmd.content.altitude_wait.descent_rate = packet.param2;
-        cmd.content.altitude_wait.wiggle_time = packet.param3;
-        break;
+//    case MAV_CMD_NAV_ALTITUDE_WAIT:                     // MAV ID: 83
+//        cmd.content.altitude_wait.altitude = packet.param1;
+//        cmd.content.altitude_wait.descent_rate = packet.param2;
+//        cmd.content.altitude_wait.wiggle_time = packet.param3;
+//        break;
 
     default:
         // unrecognised command
@@ -1016,10 +1016,10 @@ bool AP_Mission::mission_cmd_to_mavlink(const AP_Mission::Mission_Command& cmd, 
         packet.param1 = cmd.p1;                         // normal=0 inverted=1
         break;
 
-    case MAV_CMD_DO_GRIPPER:                            // MAV ID: 211
-        packet.param1 = cmd.content.gripper.num;        // gripper number
-        packet.param2 = cmd.content.gripper.action;     // action 0=release, 1=grab.  See GRIPPER_ACTION enum
-        break;
+//    case MAV_CMD_DO_GRIPPER:                            // MAV ID: 211
+//        packet.param1 = cmd.content.gripper.num;        // gripper number
+//        packet.param2 = cmd.content.gripper.action;     // action 0=release, 1=grab.  See GRIPPER_ACTION enum
+//        break;
 
     case MAV_CMD_DO_GUIDED_LIMITS:                      // MAV ID: 222
         packet.param1 = cmd.p1;                         // max time in seconds the external controller will be allowed to control the vehicle
@@ -1028,15 +1028,15 @@ bool AP_Mission::mission_cmd_to_mavlink(const AP_Mission::Mission_Command& cmd, 
         packet.param4 = cmd.content.guided_limits.horiz_max;// max horizontal distance the vehicle can move before the command will be aborted.  0 for no horizontal limit
         break;
 
-    case MAV_CMD_DO_AUTOTUNE_ENABLE:
-        packet.param1 = cmd.p1;                         // disable=0 enable=1
-        break;
+//    case MAV_CMD_DO_AUTOTUNE_ENABLE:
+//        packet.param1 = cmd.p1;                         // disable=0 enable=1
+//        break;
 
-    case MAV_CMD_NAV_ALTITUDE_WAIT:                     // MAV ID: 83
-        packet.param1 = cmd.content.altitude_wait.altitude;
-        packet.param2 = cmd.content.altitude_wait.descent_rate;
-        packet.param3 = cmd.content.altitude_wait.wiggle_time;
-        break;
+//    case MAV_CMD_NAV_ALTITUDE_WAIT:                     // MAV ID: 83
+//        packet.param1 = cmd.content.altitude_wait.altitude;
+//        packet.param2 = cmd.content.altitude_wait.descent_rate;
+//        packet.param3 = cmd.content.altitude_wait.wiggle_time;
+//        break;
 
     default:
         // unrecognised command

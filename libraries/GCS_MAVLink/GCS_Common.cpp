@@ -198,12 +198,12 @@ void GCS_MAVLINK::reset_cli_timeout() {
 
 void GCS_MAVLINK::send_meminfo(void)
 {
-    unsigned __brkval = 0;
-    uint32_t memory = hal.util->available_memory();
-    if (memory > 0xffff) {
-        memory = 0xffff;
-    }
-    mavlink_msg_meminfo_send(chan, __brkval, memory);
+//    unsigned __brkval = 0;
+//    uint32_t memory = hal.util->available_memory();
+//    if (memory > 0xffff) {
+//        memory = 0xffff;
+//    }
+//    mavlink_msg_meminfo_send(chan, __brkval, memory);
 }
 
 // report power supply status
@@ -220,32 +220,32 @@ void GCS_MAVLINK::send_power_status(void)
 // report AHRS2 state
 void GCS_MAVLINK::send_ahrs2(AP_AHRS &ahrs)
 {
-#if AP_AHRS_NAVEKF_AVAILABLE
-    Vector3f euler;
-    struct Location loc {};
-    if (ahrs.get_secondary_attitude(euler)) {
-        mavlink_msg_ahrs2_send(chan,
-                               euler.x,
-                               euler.y,
-                               euler.z,
-                               loc.alt*1.0e-2f,
-                               loc.lat,
-                               loc.lng);
-    }
-    AP_AHRS_NavEKF &_ahrs = reinterpret_cast<AP_AHRS_NavEKF&>(ahrs);
-    if (_ahrs.get_NavEKF2().activeCores() > 0) {
-        _ahrs.get_NavEKF2().getLLH(loc);
-        _ahrs.get_NavEKF2().getEulerAngles(-1,euler);
-        mavlink_msg_ahrs3_send(chan,
-                               euler.x,
-                               euler.y,
-                               euler.z,
-                               loc.alt*1.0e-2f,
-                               loc.lat,
-                               loc.lng,
-                               0, 0, 0, 0);
-    }
-#endif
+//#if AP_AHRS_NAVEKF_AVAILABLE
+//    Vector3f euler;
+//    struct Location loc {};
+//    if (ahrs.get_secondary_attitude(euler)) {
+//        mavlink_msg_ahrs2_send(chan,
+//                               euler.x,
+//                               euler.y,
+//                               euler.z,
+//                               loc.alt*1.0e-2f,
+//                               loc.lat,
+//                               loc.lng);
+//    }
+//    AP_AHRS_NavEKF &_ahrs = reinterpret_cast<AP_AHRS_NavEKF&>(ahrs);
+//    if (_ahrs.get_NavEKF2().activeCores() > 0) {
+//        _ahrs.get_NavEKF2().getLLH(loc);
+//        _ahrs.get_NavEKF2().getEulerAngles(-1,euler);
+//        mavlink_msg_ahrs3_send(chan,
+//                               euler.x,
+//                               euler.y,
+//                               euler.z,
+//                               loc.alt*1.0e-2f,
+//                               loc.lat,
+//                               loc.lng,
+//                               0, 0, 0, 0);
+//    }
+//#endif
 }
 
 /*
@@ -617,36 +617,36 @@ GCS_MAVLINK::send_text(MAV_SEVERITY severity, const char *str)
 
 void GCS_MAVLINK::handle_radio_status(mavlink_message_t *msg, DataFlash_Class &dataflash, bool log_radio)
 {
-    mavlink_radio_t packet;
-    mavlink_msg_radio_decode(msg, &packet);
-
-    // record if the GCS has been receiving radio messages from
-    // the aircraft
-    if (packet.remrssi != 0) {
-        last_radio_status_remrssi_ms = AP_HAL::millis();
-    }
-
-    // use the state of the transmit buffer in the radio to
-    // control the stream rate, giving us adaptive software
-    // flow control
-    if (packet.txbuf < 20 && stream_slowdown < 100) {
-        // we are very low on space - slow down a lot
-        stream_slowdown += 3;
-    } else if (packet.txbuf < 50 && stream_slowdown < 100) {
-        // we are a bit low on space, slow down slightly
-        stream_slowdown += 1;
-    } else if (packet.txbuf > 95 && stream_slowdown > 10) {
-        // the buffer has plenty of space, speed up a lot
-        stream_slowdown -= 2;
-    } else if (packet.txbuf > 90 && stream_slowdown != 0) {
-        // the buffer has enough space, speed up a bit
-        stream_slowdown--;
-    }
-
-    //log rssi, noise, etc if logging Performance monitoring data
-    if (log_radio) {
-        dataflash.Log_Write_Radio(packet);
-    }
+//    mavlink_radio_t packet;
+//    mavlink_msg_radio_decode(msg, &packet);
+//
+//    // record if the GCS has been receiving radio messages from
+//    // the aircraft
+//    if (packet.remrssi != 0) {
+//        last_radio_status_remrssi_ms = AP_HAL::millis();
+//    }
+//
+//    // use the state of the transmit buffer in the radio to
+//    // control the stream rate, giving us adaptive software
+//    // flow control
+//    if (packet.txbuf < 20 && stream_slowdown < 100) {
+//        // we are very low on space - slow down a lot
+//        stream_slowdown += 3;
+//    } else if (packet.txbuf < 50 && stream_slowdown < 100) {
+//        // we are a bit low on space, slow down slightly
+//        stream_slowdown += 1;
+//    } else if (packet.txbuf > 95 && stream_slowdown > 10) {
+//        // the buffer has plenty of space, speed up a lot
+//        stream_slowdown -= 2;
+//    } else if (packet.txbuf > 90 && stream_slowdown != 0) {
+//        // the buffer has enough space, speed up a bit
+//        stream_slowdown--;
+//    }
+//
+//    //log rssi, noise, etc if logging Performance monitoring data
+//    if (log_radio) {
+//        dataflash.Log_Write_Radio(packet);
+//    }
 }
 
 
@@ -858,9 +858,9 @@ GCS_MAVLINK::update(run_cli_fn run_cli)
         if (mavlink_parse_char(chan, c, &msg, &status)) {
             // we exclude radio packets to make it possible to use the
             // CLI over the radio
-            if (msg.msgid != MAVLINK_MSG_ID_RADIO && msg.msgid != MAVLINK_MSG_ID_RADIO_STATUS) {
-                mavlink_active |= (1U<<(chan-MAVLINK_COMM_0));
-            }
+//            if (msg.msgid != MAVLINK_MSG_ID_RADIO && msg.msgid != MAVLINK_MSG_ID_RADIO_STATUS) {
+//                mavlink_active |= (1U<<(chan-MAVLINK_COMM_0));
+//            }
             // if a snoop handler has been setup then use it
             if (msg_snoop != NULL) {
                 msg_snoop(&msg);
@@ -999,77 +999,77 @@ void GCS_MAVLINK::send_radio_in(uint8_t receiver_rssi)
 
 void GCS_MAVLINK::send_raw_imu(const AP_InertialSensor &ins, const Compass &compass)
 {
-    const Vector3f &accel = ins.get_accel(0);
-    const Vector3f &gyro = ins.get_gyro(0);
-    Vector3f mag;
-    if (compass.get_count() >= 1) {
-        mag = compass.get_field(0);
-    } else {
-        mag.zero();
-    }
-
-    mavlink_msg_raw_imu_send(
-        chan,
-        AP_HAL::micros(),
-        accel.x * 1000.0f / GRAVITY_MSS,
-        accel.y * 1000.0f / GRAVITY_MSS,
-        accel.z * 1000.0f / GRAVITY_MSS,
-        gyro.x * 1000.0f,
-        gyro.y * 1000.0f,
-        gyro.z * 1000.0f,
-        mag.x,
-        mag.y,
-        mag.z);
-
-    if (ins.get_gyro_count() <= 1 &&
-        ins.get_accel_count() <= 1 &&
-        compass.get_count() <= 1) {
-        return;
-    }
-    const Vector3f &accel2 = ins.get_accel(1);
-    const Vector3f &gyro2 = ins.get_gyro(1);
-    if (compass.get_count() >= 2) {
-        mag = compass.get_field(1);
-    } else {
-        mag.zero();
-    }
-    mavlink_msg_scaled_imu2_send(
-        chan,
-        AP_HAL::millis(),
-        accel2.x * 1000.0f / GRAVITY_MSS,
-        accel2.y * 1000.0f / GRAVITY_MSS,
-        accel2.z * 1000.0f / GRAVITY_MSS,
-        gyro2.x * 1000.0f,
-        gyro2.y * 1000.0f,
-        gyro2.z * 1000.0f,
-        mag.x,
-        mag.y,
-        mag.z);        
-
-    if (ins.get_gyro_count() <= 2 &&
-        ins.get_accel_count() <= 2 &&
-        compass.get_count() <= 2) {
-        return;
-    }
-    const Vector3f &accel3 = ins.get_accel(2);
-    const Vector3f &gyro3 = ins.get_gyro(2);
-    if (compass.get_count() >= 3) {
-        mag = compass.get_field(2);
-    } else {
-        mag.zero();
-    }
-    mavlink_msg_scaled_imu3_send(
-        chan,
-        AP_HAL::millis(),
-        accel3.x * 1000.0f / GRAVITY_MSS,
-        accel3.y * 1000.0f / GRAVITY_MSS,
-        accel3.z * 1000.0f / GRAVITY_MSS,
-        gyro3.x * 1000.0f,
-        gyro3.y * 1000.0f,
-        gyro3.z * 1000.0f,
-        mag.x,
-        mag.y,
-        mag.z);        
+//    const Vector3f &accel = ins.get_accel(0);
+//    const Vector3f &gyro = ins.get_gyro(0);
+//    Vector3f mag;
+//    if (compass.get_count() >= 1) {
+//        mag = compass.get_field(0);
+//    } else {
+//        mag.zero();
+//    }
+//
+//    mavlink_msg_raw_imu_send(
+//        chan,
+//        AP_HAL::micros(),
+//        accel.x * 1000.0f / GRAVITY_MSS,
+//        accel.y * 1000.0f / GRAVITY_MSS,
+//        accel.z * 1000.0f / GRAVITY_MSS,
+//        gyro.x * 1000.0f,
+//        gyro.y * 1000.0f,
+//        gyro.z * 1000.0f,
+//        mag.x,
+//        mag.y,
+//        mag.z);
+//
+//    if (ins.get_gyro_count() <= 1 &&
+//        ins.get_accel_count() <= 1 &&
+//        compass.get_count() <= 1) {
+//        return;
+//    }
+//    const Vector3f &accel2 = ins.get_accel(1);
+//    const Vector3f &gyro2 = ins.get_gyro(1);
+//    if (compass.get_count() >= 2) {
+//        mag = compass.get_field(1);
+//    } else {
+//        mag.zero();
+//    }
+//    mavlink_msg_scaled_imu2_send(
+//        chan,
+//        AP_HAL::millis(),
+//        accel2.x * 1000.0f / GRAVITY_MSS,
+//        accel2.y * 1000.0f / GRAVITY_MSS,
+//        accel2.z * 1000.0f / GRAVITY_MSS,
+//        gyro2.x * 1000.0f,
+//        gyro2.y * 1000.0f,
+//        gyro2.z * 1000.0f,
+//        mag.x,
+//        mag.y,
+//        mag.z);
+//
+//    if (ins.get_gyro_count() <= 2 &&
+//        ins.get_accel_count() <= 2 &&
+//        compass.get_count() <= 2) {
+//        return;
+//    }
+//    const Vector3f &accel3 = ins.get_accel(2);
+//    const Vector3f &gyro3 = ins.get_gyro(2);
+//    if (compass.get_count() >= 3) {
+//        mag = compass.get_field(2);
+//    } else {
+//        mag.zero();
+//    }
+//    mavlink_msg_scaled_imu3_send(
+//        chan,
+//        AP_HAL::millis(),
+//        accel3.x * 1000.0f / GRAVITY_MSS,
+//        accel3.y * 1000.0f / GRAVITY_MSS,
+//        accel3.z * 1000.0f / GRAVITY_MSS,
+//        gyro3.x * 1000.0f,
+//        gyro3.y * 1000.0f,
+//        gyro3.z * 1000.0f,
+//        mag.x,
+//        mag.y,
+//        mag.z);
 }
 
 void GCS_MAVLINK::send_scaled_pressure(AP_Baro &barometer)
@@ -1106,45 +1106,45 @@ void GCS_MAVLINK::send_scaled_pressure(AP_Baro &barometer)
 
 void GCS_MAVLINK::send_sensor_offsets(const AP_InertialSensor &ins, const Compass &compass, AP_Baro &barometer)
 {
-    // run this message at a much lower rate - otherwise it
-    // pointlessly wastes quite a lot of bandwidth
-    static uint8_t counter;
-    if (counter++ < 10) {
-        return;
-    }
-    counter = 0;
-
-    const Vector3f &mag_offsets = compass.get_offsets(0);
-    const Vector3f &accel_offsets = ins.get_accel_offsets(0);
-    const Vector3f &gyro_offsets = ins.get_gyro_offsets(0);
-
-    mavlink_msg_sensor_offsets_send(chan,
-                                    mag_offsets.x,
-                                    mag_offsets.y,
-                                    mag_offsets.z,
-                                    compass.get_declination(),
-                                    barometer.get_pressure(),
-                                    barometer.get_temperature()*100,
-                                    gyro_offsets.x,
-                                    gyro_offsets.y,
-                                    gyro_offsets.z,
-                                    accel_offsets.x,
-                                    accel_offsets.y,
-                                    accel_offsets.z);
+//    // run this message at a much lower rate - otherwise it
+//    // pointlessly wastes quite a lot of bandwidth
+//    static uint8_t counter;
+//    if (counter++ < 10) {
+//        return;
+//    }
+//    counter = 0;
+//
+//    const Vector3f &mag_offsets = compass.get_offsets(0);
+//    const Vector3f &accel_offsets = ins.get_accel_offsets(0);
+//    const Vector3f &gyro_offsets = ins.get_gyro_offsets(0);
+//
+//    mavlink_msg_sensor_offsets_send(chan,
+//                                    mag_offsets.x,
+//                                    mag_offsets.y,
+//                                    mag_offsets.z,
+//                                    compass.get_declination(),
+//                                    barometer.get_pressure(),
+//                                    barometer.get_temperature()*100,
+//                                    gyro_offsets.x,
+//                                    gyro_offsets.y,
+//                                    gyro_offsets.z,
+//                                    accel_offsets.x,
+//                                    accel_offsets.y,
+//                                    accel_offsets.z);
 }
 
 void GCS_MAVLINK::send_ahrs(AP_AHRS &ahrs)
 {
-    const Vector3f &omega_I = ahrs.get_gyro_drift();
-    mavlink_msg_ahrs_send(
-        chan,
-        omega_I.x,
-        omega_I.y,
-        omega_I.z,
-        0,
-        0,
-        ahrs.get_error_rp(),
-        ahrs.get_error_yaw());
+//    const Vector3f &omega_I = ahrs.get_gyro_drift();
+//    mavlink_msg_ahrs_send(
+//        chan,
+//        omega_I.x,
+//        omega_I.y,
+//        omega_I.z,
+//        0,
+//        0,
+//        ahrs.get_error_rp(),
+//        ahrs.get_error_yaw());
 }
 
 /*
@@ -1193,9 +1193,9 @@ void GCS_MAVLINK::send_parameter_value_all(const char *param_name, ap_var_type p
 // report battery2 state
 void GCS_MAVLINK::send_battery2(const AP_BattMonitor &battery)
 {
-    if (battery.num_instances() > 1) {
-        mavlink_msg_battery2_send(chan, battery.voltage2()*1000, -1);
-    }
+//    if (battery.num_instances() > 1) {
+//        mavlink_msg_battery2_send(chan, battery.voltage2()*1000, -1);
+//    }
 }
 
 /*

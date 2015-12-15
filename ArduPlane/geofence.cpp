@@ -439,13 +439,13 @@ bool Plane::geofence_stickmixing(void) {
  */
 void Plane::geofence_send_status(mavlink_channel_t chan)
 {
-    if (geofence_enabled() && geofence_state != NULL) {
-        mavlink_msg_fence_status_send(chan,
-                                      (int8_t)geofence_state->fence_triggered,
-                                      geofence_state->breach_count,
-                                      geofence_state->breach_type,
-                                      geofence_state->breach_time);
-    }
+//    if (geofence_enabled() && geofence_state != NULL) {
+//        mavlink_msg_fence_status_send(chan,
+//                                      (int8_t)geofence_state->fence_triggered,
+//                                      geofence_state->breach_count,
+//                                      geofence_state->breach_type,
+//                                      geofence_state->breach_time);
+//    }
 }
 
 /*

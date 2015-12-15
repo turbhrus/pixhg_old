@@ -30,23 +30,23 @@ void AP_Gimbal::receive_feedback(mavlink_channel_t chan, mavlink_message_t *msg)
 
 void AP_Gimbal::decode_feedback(mavlink_message_t *msg)
 {
-    mavlink_msg_gimbal_report_decode(msg, &_report_msg);
-
-    _measurement.delta_time = _report_msg.delta_time;
-    _measurement.delta_angles.x = _report_msg.delta_angle_x;
-    _measurement.delta_angles.y = _report_msg.delta_angle_y;
-    _measurement.delta_angles.z = _report_msg.delta_angle_z;
-    _measurement.delta_velocity.x = _report_msg.delta_velocity_x,
-    _measurement.delta_velocity.y = _report_msg.delta_velocity_y;
-    _measurement.delta_velocity.z = _report_msg.delta_velocity_z;
-    _measurement.joint_angles.x = _report_msg.joint_roll;
-    _measurement.joint_angles.y = _report_msg.joint_el;
-    _measurement.joint_angles.z = _report_msg.joint_az;
-
-    //apply joint angle compensation
-    _measurement.joint_angles -= _gimbalParams.joint_angles_offsets;
-    _measurement.delta_velocity -= _gimbalParams.delta_velocity_offsets;
-    _measurement.delta_angles -= _gimbalParams.delta_angles_offsets;
+//    mavlink_msg_gimbal_report_decode(msg, &_report_msg);
+//
+//    _measurement.delta_time = _report_msg.delta_time;
+//    _measurement.delta_angles.x = _report_msg.delta_angle_x;
+//    _measurement.delta_angles.y = _report_msg.delta_angle_y;
+//    _measurement.delta_angles.z = _report_msg.delta_angle_z;
+//    _measurement.delta_velocity.x = _report_msg.delta_velocity_x,
+//    _measurement.delta_velocity.y = _report_msg.delta_velocity_y;
+//    _measurement.delta_velocity.z = _report_msg.delta_velocity_z;
+//    _measurement.joint_angles.x = _report_msg.joint_roll;
+//    _measurement.joint_angles.y = _report_msg.joint_el;
+//    _measurement.joint_angles.z = _report_msg.joint_az;
+//
+//    //apply joint angle compensation
+//    _measurement.joint_angles -= _gimbalParams.joint_angles_offsets;
+//    _measurement.delta_velocity -= _gimbalParams.delta_velocity_offsets;
+//    _measurement.delta_angles -= _gimbalParams.delta_angles_offsets;
 }
 
 /*
@@ -54,18 +54,18 @@ void AP_Gimbal::decode_feedback(mavlink_message_t *msg)
  */
 void AP_Gimbal::send_report(mavlink_channel_t chan) const
 {
-    mavlink_msg_gimbal_report_send(chan, 
-                                   0, 0, // send as broadcast
-                                   _report_msg.delta_time, 
-                                   _report_msg.delta_angle_x, 
-                                   _report_msg.delta_angle_y, 
-                                   _report_msg.delta_angle_z, 
-                                   _report_msg.delta_velocity_x, 
-                                   _report_msg.delta_velocity_y, 
-                                   _report_msg.delta_velocity_z, 
-                                   _report_msg.joint_roll, 
-                                   _report_msg.joint_el, 
-                                   _report_msg.joint_az);
+//    mavlink_msg_gimbal_report_send(chan,
+//                                   0, 0, // send as broadcast
+//                                   _report_msg.delta_time,
+//                                   _report_msg.delta_angle_x,
+//                                   _report_msg.delta_angle_y,
+//                                   _report_msg.delta_angle_z,
+//                                   _report_msg.delta_velocity_x,
+//                                   _report_msg.delta_velocity_y,
+//                                   _report_msg.delta_velocity_z,
+//                                   _report_msg.joint_roll,
+//                                   _report_msg.joint_el,
+//                                   _report_msg.joint_az);
 }
 
 void AP_Gimbal::update_state()
@@ -185,8 +185,8 @@ Vector3f AP_Gimbal::getGimbalRateDemVecGyroBias()
 
 void AP_Gimbal::send_control(mavlink_channel_t chan)
 {
-    mavlink_msg_gimbal_control_send(chan, mavlink_system.sysid, _compid,
-        gimbalRateDemVec.x, gimbalRateDemVec.y, gimbalRateDemVec.z);
+//    mavlink_msg_gimbal_control_send(chan, mavlink_system.sysid, _compid,
+//        gimbalRateDemVec.x, gimbalRateDemVec.y, gimbalRateDemVec.z);
 }
 
 void AP_Gimbal::update_target(Vector3f newTarget)

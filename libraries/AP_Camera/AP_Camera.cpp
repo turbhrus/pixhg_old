@@ -142,10 +142,10 @@ AP_Camera::trigger_pic_cleanup()
 void
 AP_Camera::control_msg(mavlink_message_t* msg)
 {
-    __mavlink_digicam_control_t packet;
-    mavlink_msg_digicam_control_decode(msg, &packet);
-
-    control(packet.session, packet.zoom_pos, packet.zoom_step, packet.focus_lock, packet.shot, packet.command_id);
+//    __mavlink_digicam_control_t packet;
+//    mavlink_msg_digicam_control_decode(msg, &packet);
+//
+//    control(packet.session, packet.zoom_pos, packet.zoom_step, packet.focus_lock, packet.shot, packet.command_id);
 }
 
 void AP_Camera::configure(float shooting_mode, float shutter_speed, float aperture, float ISO, float exposure_type, float cmd_id, float engine_cutoff_time)
@@ -204,22 +204,22 @@ void AP_Camera::control(float session, float zoom_pos, float zoom_step, float fo
  */
 void AP_Camera::send_feedback(mavlink_channel_t chan, AP_GPS &gps, const AP_AHRS &ahrs, const Location &current_loc)
 {
-    float altitude, altitude_rel;
-    if (current_loc.flags.relative_alt) {
-        altitude = current_loc.alt+ahrs.get_home().alt;
-        altitude_rel = current_loc.alt;
-    } else {
-        altitude = current_loc.alt;
-        altitude_rel = current_loc.alt - ahrs.get_home().alt;
-    }
-
-    mavlink_msg_camera_feedback_send(chan, 
-        gps.time_epoch_usec(),
-        0, 0, _image_index,
-        current_loc.lat, current_loc.lng,
-        altitude/100.0f, altitude_rel/100.0f,
-        ahrs.roll_sensor/100.0f, ahrs.pitch_sensor/100.0f, ahrs.yaw_sensor/100.0f,
-        0.0f,CAMERA_FEEDBACK_PHOTO);
+//    float altitude, altitude_rel;
+//    if (current_loc.flags.relative_alt) {
+//        altitude = current_loc.alt+ahrs.get_home().alt;
+//        altitude_rel = current_loc.alt;
+//    } else {
+//        altitude = current_loc.alt;
+//        altitude_rel = current_loc.alt - ahrs.get_home().alt;
+//    }
+//
+//    mavlink_msg_camera_feedback_send(chan,
+//        gps.time_epoch_usec(),
+//        0, 0, _image_index,
+//        current_loc.lat, current_loc.lng,
+//        altitude/100.0f, altitude_rel/100.0f,
+//        ahrs.roll_sensor/100.0f, ahrs.pitch_sensor/100.0f, ahrs.yaw_sensor/100.0f,
+//        0.0f,CAMERA_FEEDBACK_PHOTO);
 }
 
 

@@ -78,9 +78,9 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
         do_continue_and_change_alt(cmd);
         break;
 
-    case MAV_CMD_NAV_ALTITUDE_WAIT:
-        do_altitude_wait(cmd);
-        break;
+//    case MAV_CMD_NAV_ALTITUDE_WAIT:
+//        do_altitude_wait(cmd);
+//        break;
 
     // Conditional commands
 
@@ -154,9 +154,9 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
 #endif
         break;
 
-    case MAV_CMD_DO_AUTOTUNE_ENABLE:
-        autotune_enable(cmd.p1);
-        break;
+//    case MAV_CMD_DO_AUTOTUNE_ENABLE:
+//        autotune_enable(cmd.p1);
+//        break;
 
 #if CAMERA == ENABLED
     case MAV_CMD_DO_CONTROL_VIDEO:                      // Control on-board camera capturing. |Camera ID (-1 for all)| Transmission: 0: disabled, 1: enabled compressed, 2: enabled raw| Transmission mode: 0: video stream, >0: single images every n seconds (decimal)| Recording: 0: disabled, 1: enabled compressed, 2: enabled raw| Empty| Empty| Empty|
@@ -251,8 +251,8 @@ bool Plane::verify_command(const AP_Mission::Mission_Command& cmd)        // Ret
     case MAV_CMD_NAV_CONTINUE_AND_CHANGE_ALT:
         return verify_continue_and_change_alt();
 
-    case MAV_CMD_NAV_ALTITUDE_WAIT:
-        return verify_altitude_wait(cmd);
+//    case MAV_CMD_NAV_ALTITUDE_WAIT:
+//        return verify_altitude_wait(cmd);
 
     // Conditional commands
 
@@ -288,7 +288,7 @@ bool Plane::verify_command(const AP_Mission::Mission_Command& cmd)        // Ret
     case MAV_CMD_DO_INVERTED_FLIGHT:
     case MAV_CMD_DO_LAND_START:
     case MAV_CMD_DO_FENCE_ENABLE:
-    case MAV_CMD_DO_AUTOTUNE_ENABLE:
+//    case MAV_CMD_DO_AUTOTUNE_ENABLE:
         return true;
 
     default:
@@ -922,20 +922,20 @@ void Plane::do_take_picture()
 // do_parachute - configure or release parachute
 void Plane::do_parachute(const AP_Mission::Mission_Command& cmd)
 {
-    switch (cmd.p1) {
-        case PARACHUTE_DISABLE:
-            parachute.enabled(false);
-            break;
-        case PARACHUTE_ENABLE:
-            parachute.enabled(true);
-            break;
-        case PARACHUTE_RELEASE:
-            parachute_release();
-            break;
-        default:
-            // do nothing
-            break;
-    }
+//    switch (cmd.p1) {
+//        case PARACHUTE_DISABLE:
+//            parachute.enabled(false);
+//            break;
+//        case PARACHUTE_ENABLE:
+//            parachute.enabled(true);
+//            break;
+//        case PARACHUTE_RELEASE:
+//            parachute_release();
+//            break;
+//        default:
+//            // do nothing
+//            break;
+//    }
 }
 #endif
 

@@ -312,12 +312,12 @@ void MAVLink_routing::get_targets(const mavlink_message_t* msg, int16_t &sysid, 
     
     switch (msg->msgid) {
         // these messages only have a target system
-    case MAVLINK_MSG_ID_CAMERA_FEEDBACK:
-        sysid = mavlink_msg_camera_feedback_get_target_system(msg);
-        break;
-    case MAVLINK_MSG_ID_CAMERA_STATUS:
-        sysid = mavlink_msg_camera_status_get_target_system(msg);
-        break;
+//    case MAVLINK_MSG_ID_CAMERA_FEEDBACK:
+//        sysid = mavlink_msg_camera_feedback_get_target_system(msg);
+//        break;
+//    case MAVLINK_MSG_ID_CAMERA_STATUS:
+//        sysid = mavlink_msg_camera_status_get_target_system(msg);
+//        break;
     case MAVLINK_MSG_ID_CHANGE_OPERATOR_CONTROL:
         sysid = mavlink_msg_change_operator_control_get_target_system(msg);
         break;
@@ -329,46 +329,46 @@ void MAVLink_routing::get_targets(const mavlink_message_t* msg, int16_t &sysid, 
         break;
 
     // these support both target system and target component
-    case MAVLINK_MSG_ID_DIGICAM_CONFIGURE:
-        sysid  = mavlink_msg_digicam_configure_get_target_system(msg);
-        compid = mavlink_msg_digicam_configure_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_DIGICAM_CONTROL:
-        sysid  = mavlink_msg_digicam_control_get_target_system(msg);
-        compid = mavlink_msg_digicam_control_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_FENCE_FETCH_POINT:
-        sysid  = mavlink_msg_fence_fetch_point_get_target_system(msg);
-        compid = mavlink_msg_fence_fetch_point_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_FENCE_POINT:
-        sysid  = mavlink_msg_fence_point_get_target_system(msg);
-        compid = mavlink_msg_fence_point_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_MOUNT_CONFIGURE:
-        sysid  = mavlink_msg_mount_configure_get_target_system(msg);
-        compid = mavlink_msg_mount_configure_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_MOUNT_CONTROL:
-        sysid  = mavlink_msg_mount_control_get_target_system(msg);
-        compid = mavlink_msg_mount_control_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_MOUNT_STATUS:
-        sysid  = mavlink_msg_mount_status_get_target_system(msg);
-        compid = mavlink_msg_mount_status_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_RALLY_FETCH_POINT:
-        sysid  = mavlink_msg_rally_fetch_point_get_target_system(msg);
-        compid = mavlink_msg_rally_fetch_point_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_RALLY_POINT:
-        sysid  = mavlink_msg_rally_point_get_target_system(msg);
-        compid = mavlink_msg_rally_point_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_SET_MAG_OFFSETS:
-        sysid  = mavlink_msg_set_mag_offsets_get_target_system(msg);
-        compid = mavlink_msg_set_mag_offsets_get_target_component(msg);
-        break;
+//    case MAVLINK_MSG_ID_DIGICAM_CONFIGURE:
+//        sysid  = mavlink_msg_digicam_configure_get_target_system(msg);
+//        compid = mavlink_msg_digicam_configure_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_DIGICAM_CONTROL:
+//        sysid  = mavlink_msg_digicam_control_get_target_system(msg);
+//        compid = mavlink_msg_digicam_control_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_FENCE_FETCH_POINT:
+//        sysid  = mavlink_msg_fence_fetch_point_get_target_system(msg);
+//        compid = mavlink_msg_fence_fetch_point_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_FENCE_POINT:
+//        sysid  = mavlink_msg_fence_point_get_target_system(msg);
+//        compid = mavlink_msg_fence_point_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_MOUNT_CONFIGURE:
+//        sysid  = mavlink_msg_mount_configure_get_target_system(msg);
+//        compid = mavlink_msg_mount_configure_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_MOUNT_CONTROL:
+//        sysid  = mavlink_msg_mount_control_get_target_system(msg);
+//        compid = mavlink_msg_mount_control_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_MOUNT_STATUS:
+//        sysid  = mavlink_msg_mount_status_get_target_system(msg);
+//        compid = mavlink_msg_mount_status_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_RALLY_FETCH_POINT:
+//        sysid  = mavlink_msg_rally_fetch_point_get_target_system(msg);
+//        compid = mavlink_msg_rally_fetch_point_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_RALLY_POINT:
+//        sysid  = mavlink_msg_rally_point_get_target_system(msg);
+//        compid = mavlink_msg_rally_point_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_SET_MAG_OFFSETS:
+//        sysid  = mavlink_msg_set_mag_offsets_get_target_system(msg);
+//        compid = mavlink_msg_set_mag_offsets_get_target_component(msg);
+//        break;
     case MAVLINK_MSG_ID_COMMAND_INT:
         sysid  = mavlink_msg_command_int_get_target_system(msg);
         compid = mavlink_msg_command_int_get_target_component(msg);
@@ -485,14 +485,14 @@ void MAVLink_routing::get_targets(const mavlink_message_t* msg, int16_t &sysid, 
         sysid  = mavlink_msg_v2_extension_get_target_system(msg);
         compid = mavlink_msg_v2_extension_get_target_component(msg);
         break;
-    case MAVLINK_MSG_ID_GIMBAL_REPORT:
-        sysid  = mavlink_msg_gimbal_report_get_target_system(msg);
-        compid = mavlink_msg_gimbal_report_get_target_component(msg);
-        break;
-    case MAVLINK_MSG_ID_GIMBAL_CONTROL:
-        sysid  = mavlink_msg_gimbal_control_get_target_system(msg);
-        compid = mavlink_msg_gimbal_control_get_target_component(msg);
-        break;
+//    case MAVLINK_MSG_ID_GIMBAL_REPORT:
+//        sysid  = mavlink_msg_gimbal_report_get_target_system(msg);
+//        compid = mavlink_msg_gimbal_report_get_target_component(msg);
+//        break;
+//    case MAVLINK_MSG_ID_GIMBAL_CONTROL:
+//        sysid  = mavlink_msg_gimbal_control_get_target_system(msg);
+//        compid = mavlink_msg_gimbal_control_get_target_component(msg);
+//        break;
     }
 }
 

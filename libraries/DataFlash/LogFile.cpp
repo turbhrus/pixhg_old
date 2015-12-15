@@ -1524,21 +1524,21 @@ bool DataFlash_Backend::Log_Write_MavCmd(uint16_t cmd_total, const mavlink_missi
     return WriteBlock(&pkt, sizeof(pkt));
 }
 
-void DataFlash_Class::Log_Write_Radio(const mavlink_radio_t &packet) 
-{
-    struct log_Radio pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RADIO_MSG),
-        time_us      : AP_HAL::micros64(),
-        rssi         : packet.rssi,
-        remrssi      : packet.remrssi,
-        txbuf        : packet.txbuf,
-        noise        : packet.noise,
-        remnoise     : packet.remnoise,
-        rxerrors     : packet.rxerrors,
-        fixed        : packet.fixed
-    };
-    WriteBlock(&pkt, sizeof(pkt)); 
-}
+//void DataFlash_Class::Log_Write_Radio(const mavlink_radio_t &packet)
+//{
+//    struct log_Radio pkt = {
+//        LOG_PACKET_HEADER_INIT(LOG_RADIO_MSG),
+//        time_us      : AP_HAL::micros64(),
+//        rssi         : packet.rssi,
+//        remrssi      : packet.remrssi,
+//        txbuf        : packet.txbuf,
+//        noise        : packet.noise,
+//        remnoise     : packet.remnoise,
+//        rxerrors     : packet.rxerrors,
+//        fixed        : packet.fixed
+//    };
+//    WriteBlock(&pkt, sizeof(pkt));
+//}
 
 // Write a Camera packet
 void DataFlash_Class::Log_Write_Camera(const AP_AHRS &ahrs, const AP_GPS &gps, const Location &current_loc)

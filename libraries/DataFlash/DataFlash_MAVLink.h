@@ -75,7 +75,8 @@ public:
     // };
     struct dm_block {
         uint32_t seqno;
-        uint8_t buf[MAVLINK_MSG_REMOTE_LOG_DATA_BLOCK_FIELD_DATA_LEN];
+//        uint8_t buf[MAVLINK_MSG_REMOTE_LOG_DATA_BLOCK_FIELD_DATA_LEN];
+        uint8_t buf[200];
         uint32_t last_sent;
         struct dm_block *next;
     };

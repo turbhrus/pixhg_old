@@ -87,8 +87,8 @@ void AP_Mount_MAVLink::set_mode(enum MAV_MOUNT_MODE mode)
 // status_msg - called to allow mounts to send their status to GCS using the MOUNT_STATUS message
 void AP_Mount_MAVLink::status_msg(mavlink_channel_t chan)
 {
-    Vector3f est = _gimbal.getGimbalEstimateEF();
-    mavlink_msg_mount_status_send(chan, 0, 0, degrees(est.y)*100, degrees(est.x)*100, degrees(est.z)*100);
+//    Vector3f est = _gimbal.getGimbalEstimateEF();
+//    mavlink_msg_mount_status_send(chan, 0, 0, degrees(est.y)*100, degrees(est.x)*100, degrees(est.z)*100);
 }
 
 /*
@@ -96,8 +96,8 @@ void AP_Mount_MAVLink::status_msg(mavlink_channel_t chan)
  */
 void AP_Mount_MAVLink::handle_gimbal_report(mavlink_channel_t chan, mavlink_message_t *msg)
 {
-    _gimbal.update_target(_angle_ef_target_rad);
-    _gimbal.receive_feedback(chan,msg);
+//    _gimbal.update_target(_angle_ef_target_rad);
+//    _gimbal.receive_feedback(chan,msg);
 }
 
 /*
@@ -105,7 +105,7 @@ void AP_Mount_MAVLink::handle_gimbal_report(mavlink_channel_t chan, mavlink_mess
  */
 void AP_Mount_MAVLink::send_gimbal_report(mavlink_channel_t chan)
 {
-    _gimbal.send_report(chan);
+//    _gimbal.send_report(chan);
 }
 
 #endif // AP_AHRS_NAVEKF_AVAILABLE
