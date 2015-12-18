@@ -720,7 +720,10 @@ private:
     float vario_TE;
 
     // Differentiator used in total energy compensation
-    DerivativeFilter<float,11> airspeed_derivative;
+    DerivativeFilter<float,11> airspeed_derivative_lpf;
+
+    // LPF used to smooth the airspeed measurement
+    butter10hz1_6 airspeed_lpf;
 
     // initialise !!!
     struct{

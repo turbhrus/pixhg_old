@@ -88,7 +88,8 @@ void Plane::read_airspeed(void)
     // update smoothed airspeed estimate
     float aspeed;
     if (ahrs.airspeed_estimate(&aspeed)) {
-        smoothed_airspeed = smoothed_airspeed * 0.8f + aspeed * 0.2f;
+//        smoothed_airspeed = smoothed_airspeed * 0.8f + aspeed * 0.2f;
+        smoothed_airspeed = airspeed_lpf.filter(aspeed);
     }
 }
 
@@ -105,21 +106,21 @@ void Plane::zero_airspeed(bool in_startup)
 // should be called at 10hz
 void Plane::read_battery(void)
 {
-    battery.read();
-    compass.set_current(battery.current_amps());
-
-    if (!usb_connected && 
-        hal.util->get_soft_armed() &&
-        battery.exhausted(g.fs_batt_voltage, g.fs_batt_mah)) {
-        low_battery_event();
-    }
+//    battery.read();
+//    compass.set_current(battery.current_amps());
+//
+//    if (!usb_connected &&
+//        hal.util->get_soft_armed() &&
+//        battery.exhausted(g.fs_batt_voltage, g.fs_batt_mah)) {
+//        low_battery_event();
+//    }
 }
 
 // read the receiver RSSI as an 8 bit number for MAVLink
 // RC_CHANNELS_SCALED message
 void Plane::read_receiver_rssi(void)
 {
-    receiver_rssi = rssi.read_receiver_rssi_uint8();
+//    receiver_rssi = rssi.read_receiver_rssi_uint8();
 }
 
 /*
@@ -127,12 +128,12 @@ void Plane::read_receiver_rssi(void)
  */
 void Plane::rpm_update(void)
 {
-    rpm_sensor.update();
-    if (rpm_sensor.healthy(0) || rpm_sensor.healthy(1)) {
-        if (should_log(MASK_LOG_RC)) {
-            DataFlash.Log_Write_RPM(rpm_sensor);
-        }
-    }
+//    rpm_sensor.update();
+//    if (rpm_sensor.healthy(0) || rpm_sensor.healthy(1)) {
+//        if (should_log(MASK_LOG_RC)) {
+//            DataFlash.Log_Write_RPM(rpm_sensor);
+//        }
+//    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,7 +159,7 @@ float Plane::get_true_airspeed()
 	return sqrt(R2*T/C*(pow(pressure_ratio,C)-1.0f));
 	**************/
 
-	return airspeed.get_EAS2TAS() * airspeed.get_airspeed();
+	return airspeed.get_EAS2TAS() * smoothed_airspeed;
 
 }
 
@@ -187,12 +188,12 @@ void Plane::compensated_vario()
     if( t_now > t_then){
 		// airspeed differential
 		airspeed_tas = get_true_airspeed();
-	    airspeed_derivative.update(airspeed_tas, t_now*1000);
+	    airspeed_derivative_lpf.update(airspeed_tas, t_now*1000);
 		t_then = t_now;
     }
 
-	if( a.z != 0.){
-		das_dt = airspeed_derivative.slope() * 1.0e6f;
+	if( a.z != 0.0){
+		das_dt = airspeed_derivative_lpf.slope() * 1.0e6f;
 		vario_TE = -v_ned.z +
 				(te_damping_factor * airspeed_tas * das_dt / (-a.z));
 
