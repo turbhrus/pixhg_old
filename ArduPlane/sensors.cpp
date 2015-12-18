@@ -168,16 +168,15 @@ float Plane::get_true_airspeed()
 void Plane::compensated_vario()
 {
 	static uint32_t t_then=0;
-	float das_dt=0.0;
 	uint32_t t_now;
+	float das_dt; // time derivative of airspeed
 
 	/* Damping factor: tuning parameter used to reduce the effect of energy
 	   compensation on the vario signal. */
-	const float te_damping_factor = 0.4;
+	const float te_damping_factor = 0.5;
 
 	// Get vertical acceleration component from the NED
-	Vector3f a, v_ned;
-	a = ahrs.get_accel_ef_blended();
+	Vector3f v_ned;
 	// Vertical velocity component
 	if( ! ahrs.get_velocity_NED(v_ned)){
     	v_ned.zero();
@@ -192,15 +191,12 @@ void Plane::compensated_vario()
 		t_then = t_now;
     }
 
-	if( a.z != 0.0){
-		das_dt = airspeed_derivative_lpf.slope() * 1.0e6f;
-		vario_TE = -v_ned.z +
-				(te_damping_factor * airspeed_tas * das_dt / (-a.z));
+	das_dt = airspeed_derivative_lpf.slope() * 1.0e6f;
+	vario_TE = -v_ned.z +
+			(te_damping_factor * airspeed_tas * das_dt / GRAVITY_MSS);
 
-		debug_dummy1 = airspeed_tas * das_dt / (-a.z);
-		debug_dummy2 = das_dt;
-		debug_dummy3 = (-a.z);
-	}
+	debug_dummy1 = airspeed_tas * das_dt / GRAVITY_MSS;
+	debug_dummy2 = das_dt;
 }
 
 void Plane::update_audio_vario()
