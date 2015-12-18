@@ -10,13 +10,24 @@ class Butter2
 public:
   float filter(float input)
   {
-        float newhist = input + Coefficients::A1*hist[1] + Coefficients::A2*hist[0];
-        float ret = (newhist + 2*hist[1] + hist[0])/Coefficients::GAIN;
-        hist[0] = hist[1]; hist[1] = newhist;
+//        float newhist = input + Coefficients::A1*hist[1] + Coefficients::A2*hist[0];
+//        float ret = (newhist + 2*hist[1] + hist[0])/Coefficients::GAIN;
+//        hist[0] = hist[1]; hist[1] = newhist;
+//        return ret;
+
+        float ret = (input + 2*x[1] + x[0]) / Coefficients::GAIN;
+        ret += Coefficients::A1*y[1] + Coefficients::A2*y[0];
+        y[0] = y[1]; y[1] = ret;
+        x[0] = x[1]; x[1] = input;
         return ret;
   }
+  //constructor
+  Butter2(){
+	  x[0]=x[1]=y[0]=y[1]=0.0;
+  };
+
 private:
-    float hist[2];
+    float x[2], y[2];
 };
 
 struct butter100_025_coeffs
@@ -107,5 +118,14 @@ struct butter50_8_coeffs
 };
 typedef Butter2<butter50_8_coeffs> butter50hz8_0; //50hz sample, 8hz fcut
 typedef Butter2<butter50_8_coeffs> butter10hz1_6; //10hz sample, 1.6hz fcut
+
+struct butter50_10_coeffs
+{
+  static constexpr float A1 = 0.36952737735124147;
+  static constexpr float A2 =  -0.19581571265583314;
+  static constexpr float GAIN =  4.840925169935376;
+};
+typedef Butter2<butter50_10_coeffs> butter50hz10_0; //50hz sample, 10hz fcut
+typedef Butter2<butter50_10_coeffs> butter10hz2_0; //10hz sample, 2hz fcut
 
 #endif // __FILTER_BUTTER_H__
