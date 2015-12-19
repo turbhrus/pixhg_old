@@ -571,5 +571,6 @@ bool DataFlash_MAVLink::send_log_block(struct dm_block &block)
 //    _mavlink_resend_uart(chan, &msg);
 //
 //    return true;
+	return false;
 }
 #endif

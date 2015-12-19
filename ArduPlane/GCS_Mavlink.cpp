@@ -342,9 +342,42 @@ void GCS_MAVLINK::handle_change_alt_request(AP_Mission::Mission_Command &cmd)
 {
 }
 
+/*
+  Read and process data from XCSoar
+ */
+void GCS_MAVLINK::handle_xcsoar_calculated_data(mavlink_message_t *msg)
+{
+	mavlink_xcsoar_calculated_t packet;
+	mavlink_msg_xcsoar_calculated_decode(msg, &packet);
+
+	plane.xcsoar_data.speed_to_fly = packet.speed_to_fly;
+	if( packet.current_turnpoint != plane.xcsoar_data.current_turnpoint){
+		/*
+		 * Sound the reached turnpoint signal
+		 */
+		plane.xcsoar_data.current_turnpoint = packet.current_turnpoint;
+	}
+	plane.xcsoar_data.flying = packet.flying;
+	plane.xcsoar_data.circling = packet.circling;
+	if( packet.airspace_warning_idx != plane.xcsoar_data.airspace_warning_idx){
+		/*
+		 * Sound an airspace alarm
+		 */
+		plane.xcsoar_data.airspace_warning_idx = packet.airspace_warning_idx;
+	}
+	plane.xcsoar_data.terrain_warning = packet.terrain_warning;
+}
+
 void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 {
     switch (msg->msgid) {
+
+
+    case MAVLINK_MSG_ID_XCSOAR_CALCULATED:
+    {
+        handle_xcsoar_calculated_data(msg);
+        break;
+    }
 
     case MAVLINK_MSG_ID_REQUEST_DATA_STREAM:
     {

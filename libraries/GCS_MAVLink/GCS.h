@@ -296,6 +296,8 @@ private:
     // vehicle specific message send function
     bool try_send_message(enum ap_message id);
 
+    void handle_xcsoar_calculated_data(mavlink_message_t *msg);
+
     void handle_guided_request(AP_Mission::Mission_Command &cmd);
     void handle_change_alt_request(AP_Mission::Mission_Command &cmd);
 
