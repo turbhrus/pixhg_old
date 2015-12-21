@@ -30,6 +30,10 @@
 /// stream
 enum ap_message {
     MSG_HEARTBEAT,
+	MSG_DEBUGTEXT,
+    MSG_PIXHAWK_HG_FAST,
+    MSG_PIXHAWK_HG_MED,
+    MSG_PIXHAWK_HG_SLOW,
     MSG_ATTITUDE,
     MSG_LOCATION,
     MSG_EXTENDED_STATUS1,
@@ -294,6 +298,8 @@ private:
 
     void handle_guided_request(AP_Mission::Mission_Command &cmd);
     void handle_change_alt_request(AP_Mission::Mission_Command &cmd);
+
+    void handle_xcsoar_calculated_data(mavlink_message_t *msg);
 
     void handle_log_request_list(mavlink_message_t *msg, DataFlash_Class &dataflash);
     void handle_log_request_data(mavlink_message_t *msg, DataFlash_Class &dataflash);

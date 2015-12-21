@@ -1,5 +1,5 @@
 /** @file
- *	@brief MAVLink comm protocol built from ardupilotmega.xml
+ *	@brief MAVLink comm protocol built from PIXHAWK.xml
  *	@see http://mavlink.org
  */
 #ifndef MAVLINK_H
@@ -22,6 +22,6 @@
 #endif
 
 #include "version.h"
-#include "ardupilotmega.h"
+#include "PIXHAWK.h"
 
 #endif // MAVLINK_H

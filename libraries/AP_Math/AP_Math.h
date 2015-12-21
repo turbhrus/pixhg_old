@@ -205,6 +205,11 @@ static inline int32_t constrain_int32(int32_t amt, int32_t low, int32_t high) {
 	return ((amt)<(low)?(low):((amt)>(high)?(high):(amt)));
 }
 
+// constrain a uint8_t value
+static inline uint8_t constrain_uint8(uint8_t amt, uint8_t low, uint8_t high) {
+	return ((amt)<(low)?(low):((amt)>(high)?(high):(amt)));
+}
+
 //matrix algebra
 bool inverse(float x[], float y[], uint16_t dim);
 

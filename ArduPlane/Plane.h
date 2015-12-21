@@ -95,6 +95,8 @@
 #include <AP_Parachute/AP_Parachute.h>
 #include <AP_ADSB/AP_ADSB.h>
 
+#include <AudioVario/AudioVario.h>
+
 // Configuration
 #include "config.h"
 
@@ -705,6 +707,37 @@ private:
     // time that rudder arming has been running
     uint32_t rudder_arm_timer;
 
+    // XCSoar related stuff
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Vario
+    AudioVario audio_vario;
+
+    // True airspeed (m/s)
+    float airspeed_tas;
+
+    // total energy compensated vario (m/s)
+    float vario_TE;
+
+    // Differentiator used in total energy compensation
+    DerivativeFilter<float,11> airspeed_derivative_lpf;
+
+    // LPF used to smooth the airspeed measurement
+    butter10hz1_6 airspeed_lpf;
+
+    // initialise !!!
+    struct{
+    	float speed_to_fly; ///< Optimal IAS (m/s)
+    	uint16_t current_turnpoint; ///< ID of target waypoint
+    	uint8_t flying; ///< Non zero if flying detected
+    	uint8_t circling; ///< Non zero if thermalling detected
+    	uint8_t airspace_warning_idx; ///< Unique warning identifier. Wraps around after 255
+    	uint8_t terrain_warning; ///<
+    }xcsoar_data;
+
+    // dummy variables used for printing debug messages by send_debugtext()
+    float debug_dummy1, debug_dummy2, debug_dummy3;
+
     void demo_servos(uint8_t i);
     void adjust_nav_pitch_throttle(void);
     void update_load_factor(void);
@@ -990,6 +1023,14 @@ private:
     void parachute_check();
     void parachute_release();
     bool parachute_manual_release();
+
+    void update_audio_vario();
+    float get_true_airspeed();
+    void compensated_vario();
+    void send_debugtext(mavlink_channel_t chan);
+    void send_pixhawk_hg_fast(mavlink_channel_t chan);
+    void send_pixhawk_hg_med(mavlink_channel_t chan);
+    void send_pixhawk_hg_slow(mavlink_channel_t chan);
 
 public:
     void mavlink_delay_cb();

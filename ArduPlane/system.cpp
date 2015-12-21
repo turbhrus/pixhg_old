@@ -247,6 +247,8 @@ void Plane::init_ardupilot()
     optflow.init();
 #endif
 
+    audio_vario.init();
+
 }
 
 //********************************************************************************

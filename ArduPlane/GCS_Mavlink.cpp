@@ -10,82 +10,6 @@ void Plane::send_heartbeat(mavlink_channel_t chan)
     uint8_t base_mode = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
     uint8_t system_status;
     uint32_t custom_mode = control_mode;
-    
-    if (failsafe.state != FAILSAFE_NONE) {
-        system_status = MAV_STATE_CRITICAL;
-    } else if (plane.crash_state.is_crashed) {
-        system_status = MAV_STATE_EMERGENCY;
-    } else if (is_flying()) {
-        system_status = MAV_STATE_ACTIVE;
-    } else {
-        system_status = MAV_STATE_STANDBY;
-    }
-
-    // work out the base_mode. This value is not very useful
-    // for APM, but we calculate it as best we can so a generic
-    // MAVLink enabled ground station can work out something about
-    // what the MAV is up to. The actual bit values are highly
-    // ambiguous for most of the APM flight modes. In practice, you
-    // only get useful information from the custom_mode, which maps to
-    // the APM flight mode and has a well defined meaning in the
-    // ArduPlane documentation
-    switch (control_mode) {
-    case MANUAL:
-    case TRAINING:
-    case ACRO:
-        base_mode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
-        break;
-    case STABILIZE:
-    case FLY_BY_WIRE_A:
-    case AUTOTUNE:
-    case FLY_BY_WIRE_B:
-    case CRUISE:
-        base_mode = MAV_MODE_FLAG_STABILIZE_ENABLED;
-        break;
-    case AUTO:
-    case RTL:
-    case LOITER:
-    case GUIDED:
-    case CIRCLE:
-        base_mode = MAV_MODE_FLAG_GUIDED_ENABLED |
-                    MAV_MODE_FLAG_STABILIZE_ENABLED;
-        // note that MAV_MODE_FLAG_AUTO_ENABLED does not match what
-        // APM does in any mode, as that is defined as "system finds its own goal
-        // positions", which APM does not currently do
-        break;
-    case INITIALISING:
-        system_status = MAV_STATE_CALIBRATING;
-        break;
-    }
-
-    if (!training_manual_pitch || !training_manual_roll) {
-        base_mode |= MAV_MODE_FLAG_STABILIZE_ENABLED;        
-    }
-
-    if (control_mode != MANUAL && control_mode != INITIALISING) {
-        // stabiliser of some form is enabled
-        base_mode |= MAV_MODE_FLAG_STABILIZE_ENABLED;
-    }
-
-    if (g.stick_mixing != STICK_MIXING_DISABLED && control_mode != INITIALISING) {
-        // all modes except INITIALISING have some form of manual
-        // override if stick mixing is enabled
-        base_mode |= MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
-    }
-
-#if HIL_SUPPORT
-    if (g.hil_mode == 1) {
-        base_mode |= MAV_MODE_FLAG_HIL_ENABLED;
-    }
-#endif
-
-    // we are armed if we are not initialising
-    if (control_mode != INITIALISING && hal.util->get_soft_armed()) {
-        base_mode |= MAV_MODE_FLAG_SAFETY_ARMED;
-    }
-
-    // indicate we have set a custom mode
-    base_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
 
     mavlink_msg_heartbeat_send(
         chan,
@@ -94,6 +18,85 @@ void Plane::send_heartbeat(mavlink_channel_t chan)
         base_mode,
         custom_mode,
         system_status);
+}
+
+void Plane::send_debugtext(mavlink_channel_t chan)
+{
+	/////////////////////////////////////////////////////////
+	///// WRITE DEBUG MESSAGES HERE
+
+//    gcs_send_text_fmt(PSTR("compass heading %.1f deg"), (float)ahrs.yaw_sensor*0.01);
+	  plane.gcs_send_text_fmt(MAV_SEVERITY_INFO, " %.3f, : %.3f", debug_dummy1, debug_dummy2);
+	/////////////////////////////////////////////////////////
+}
+
+void Plane::send_pixhawk_hg_fast(mavlink_channel_t chan)
+{
+    Vector3f accel = ahrs.get_accel_ef_blended();
+    mavlink_msg_pixhawk_hg_fast_send(
+    	chan,
+    	(uint32_t)((gps.time_epoch_usec() % 86400000000) / 1000),
+        accel.x,
+        accel.y,
+        accel.z,
+        ahrs.roll,
+        ahrs.pitch,
+        (uint16_t)ahrs.yaw_sensor);
+}
+
+void Plane::send_pixhawk_hg_med(mavlink_channel_t chan)
+{
+    Vector3f v;
+    static float ias, tas;
+    static uint32_t as_last_update=0;
+
+    // check for new airspeed update
+    uint32_t t = airspeed.last_update_ms();
+    if( t != as_last_update){
+		ias = airspeed.get_airspeed();
+		tas = get_true_airspeed();
+		as_last_update = t;
+    }
+    if( ! ahrs.get_velocity_NED(v)){
+    	v.zero();
+    }
+
+    mavlink_msg_pixhawk_hg_med_send(
+		chan,
+		current_loc.lat,                 // in 1E7 degrees
+		current_loc.lng,                 // in 1E7 degrees
+		current_loc.alt * 10,            // millimeters above sea level
+		(int16_t)(v.x * 100.),           // X speed cm/s (+ve North)
+		(int16_t)(v.y * 100.),           // Y speed cm/s (+ve East)
+		(int16_t)(v.z * 100.),           // Z speed cm/s (+ve up)
+		(int16_t)(vario_TE * 100.),      // total energy vario cm/s (+ve up)
+		ias,                             // indicated airspeed
+		tas);                            // true airspeed
+}
+
+void Plane::send_pixhawk_hg_slow(mavlink_channel_t chan)
+{
+	Location loc = gps.location();
+    Vector3f wind = ahrs.wind_estimate();
+    // get temperature from airspeed sensor if available
+	float temperature;
+    if( ! airspeed.get_temperature(temperature)){
+    	temperature = barometer.get_temperature();
+    }
+
+    mavlink_msg_pixhawk_hg_slow_send(
+    	chan,
+    	gps.time_epoch_usec(),
+    	gps.get_hdop(),
+    	loc.alt * 10, // in mm
+    	gps.status(),
+    	gps.num_sats(),
+        temperature,
+        0,  // humidity
+        wind.x,  // North +ve
+        wind.y,  // East +ve
+        0); // Down +ve (not implemented)
+
 }
 
 void Plane::send_attitude(mavlink_channel_t chan)
@@ -616,6 +619,26 @@ bool GCS_MAVLINK::try_send_message(enum ap_message id)
         plane.send_heartbeat(chan);
         return true;
 
+    case MSG_DEBUGTEXT:
+        CHECK_PAYLOAD_SIZE(STATUSTEXT);
+        plane.send_debugtext(chan);
+        return true;
+
+    case MSG_PIXHAWK_HG_FAST:
+        CHECK_PAYLOAD_SIZE(PIXHAWK_HG_FAST);
+        plane.send_pixhawk_hg_fast(chan);
+        break;
+
+    case MSG_PIXHAWK_HG_MED:
+        CHECK_PAYLOAD_SIZE(PIXHAWK_HG_MED);
+        plane.send_pixhawk_hg_med(chan);
+        break;
+
+    case MSG_PIXHAWK_HG_SLOW:
+        CHECK_PAYLOAD_SIZE(PIXHAWK_HG_SLOW);
+        plane.send_pixhawk_hg_slow(chan);
+        break;
+
     case MSG_EXTENDED_STATUS1:
         CHECK_PAYLOAD_SIZE(SYS_STATUS);
         plane.send_extended_status1(chan);
@@ -852,7 +875,7 @@ const AP_Param::GroupInfo GCS_MAVLINK::var_info[] = {
     // @Range: 0 10
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("RAW_SENS", 0, GCS_MAVLINK, streamRates[0],  1),
+    AP_GROUPINFO("RAW_SENS", 0, GCS_MAVLINK, streamRates[0],  25),
 
     // @Param: EXT_STAT
     // @DisplayName: Extended status stream rate to ground station
@@ -861,7 +884,7 @@ const AP_Param::GroupInfo GCS_MAVLINK::var_info[] = {
     // @Range: 0 10
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("EXT_STAT", 1, GCS_MAVLINK, streamRates[1],  1),
+    AP_GROUPINFO("EXT_STAT", 1, GCS_MAVLINK, streamRates[1],  10),
 
     // @Param: RC_CHAN
     // @DisplayName: RC Channel stream rate to ground station
@@ -888,7 +911,7 @@ const AP_Param::GroupInfo GCS_MAVLINK::var_info[] = {
     // @Range: 0 10
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("POSITION", 4, GCS_MAVLINK, streamRates[4],  1),
+    AP_GROUPINFO("POSITION", 4, GCS_MAVLINK, streamRates[4],  2),
 
     // @Param: EXTRA1
     // @DisplayName: Extra data type 1 stream rate to ground station
@@ -1003,28 +1026,33 @@ GCS_MAVLINK::data_stream_send(void)
     if (plane.gcs_out_of_time) return;
 
     if (stream_trigger(STREAM_RAW_SENSORS)) {
-        send_message(MSG_RAW_IMU1);
-        send_message(MSG_RAW_IMU2);
-        send_message(MSG_RAW_IMU3);
+//        send_message(MSG_RAW_IMU1);
+//        send_message(MSG_RAW_IMU2);
+//        send_message(MSG_RAW_IMU3);
+    	send_message(MSG_PIXHAWK_HG_FAST);
+
     }
 
     if (plane.gcs_out_of_time) return;
 
     if (stream_trigger(STREAM_EXTENDED_STATUS)) {
-        send_message(MSG_EXTENDED_STATUS1);
-        send_message(MSG_EXTENDED_STATUS2);
-        send_message(MSG_CURRENT_WAYPOINT);
-        send_message(MSG_GPS_RAW);
-        send_message(MSG_NAV_CONTROLLER_OUTPUT);
-        send_message(MSG_FENCE_STATUS);
+//        send_message(MSG_EXTENDED_STATUS1);
+//        send_message(MSG_EXTENDED_STATUS2);
+//        send_message(MSG_CURRENT_WAYPOINT);
+//        send_message(MSG_GPS_RAW);
+//        send_message(MSG_NAV_CONTROLLER_OUTPUT);
+//        send_message(MSG_FENCE_STATUS);
+        send_message(MSG_PIXHAWK_HG_MED);
+        send_message(MSG_DEBUGTEXT);
     }
 
     if (plane.gcs_out_of_time) return;
 
     if (stream_trigger(STREAM_POSITION)) {
-        // sent with GPS read
-        send_message(MSG_LOCATION);
-        send_message(MSG_LOCAL_POSITION);
+//        // sent with GPS read
+//        send_message(MSG_LOCATION);
+//        send_message(MSG_LOCAL_POSITION);
+        send_message(MSG_PIXHAWK_HG_SLOW);
     }
 
     if (plane.gcs_out_of_time) return;
@@ -1116,9 +1144,41 @@ void GCS_MAVLINK::handle_change_alt_request(AP_Mission::Mission_Command &cmd)
     plane.reset_offset_altitude();
 }
 
+/*
+  Read and process data from XCSoar
+ */
+void GCS_MAVLINK::handle_xcsoar_calculated_data(mavlink_message_t *msg)
+{
+	mavlink_xcsoar_calculated_t packet;
+	mavlink_msg_xcsoar_calculated_decode(msg, &packet);
+
+	plane.xcsoar_data.speed_to_fly = packet.speed_to_fly;
+	if( packet.current_turnpoint != plane.xcsoar_data.current_turnpoint){
+		/*
+		 * Sound the reached turnpoint signal
+		 */
+		plane.xcsoar_data.current_turnpoint = packet.current_turnpoint;
+	}
+	plane.xcsoar_data.flying = packet.flying;
+	plane.xcsoar_data.circling = packet.circling;
+	if( packet.airspace_warning_idx != plane.xcsoar_data.airspace_warning_idx){
+		/*
+		 * Sound an airspace alarm
+		 */
+		plane.xcsoar_data.airspace_warning_idx = packet.airspace_warning_idx;
+	}
+	plane.xcsoar_data.terrain_warning = packet.terrain_warning;
+}
+
 void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 {
     switch (msg->msgid) {
+
+    case MAVLINK_MSG_ID_XCSOAR_CALCULATED:
+    {
+        handle_xcsoar_calculated_data(msg);
+        break;
+    }
 
     case MAVLINK_MSG_ID_REQUEST_DATA_STREAM:
     {

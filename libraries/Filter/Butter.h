@@ -8,15 +8,25 @@ template <typename Coefficients>
 class Butter2
 {
 public:
-  float filter(float input)
-  {
-        float newhist = input + Coefficients::A1*hist[1] + Coefficients::A2*hist[0];
-        float ret = (newhist + 2*hist[1] + hist[0])/Coefficients::GAIN;
-        hist[0] = hist[1]; hist[1] = newhist;
-        return ret;
-  }
+	  float filter(float input)
+	  {
+	//        float newhist = input + Coefficients::A1*hist[1] + Coefficients::A2*hist[0];
+	//        float ret = (newhist + 2*hist[1] + hist[0])/Coefficients::GAIN;
+	//        hist[0] = hist[1]; hist[1] = newhist;
+	//        return ret;
+
+	        float ret = (input + 2*x[1] + x[0]) / Coefficients::GAIN;
+	        ret += Coefficients::A1*y[1] + Coefficients::A2*y[0];
+	        y[0] = y[1]; y[1] = ret;
+	        x[0] = x[1]; x[1] = input;
+	        return ret;
+	  }
+	  //constructor
+	  Butter2(){
+		  x[0]=x[1]=y[0]=y[1]=0.0;
+	  };
 private:
-    float hist[2];
+    float x[2], y[2];
 };
 
 struct butter100_025_coeffs
