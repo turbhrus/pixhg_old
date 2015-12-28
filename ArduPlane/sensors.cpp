@@ -197,20 +197,23 @@ void Plane::compensated_vario()
 void Plane::update_audio_vario()
 {
 	int16_t vario_input, vspeed_limit;
-	float delta_s;
 
 	if(xcsoar_data.flying && !xcsoar_data.circling){
 		// speed-to-fly director mode
-		delta_s = airspeed.get_airspeed() - xcsoar_data.speed_to_fly;
+		float delta_s = smoothed_airspeed - xcsoar_data.speed_to_fly;
 		if(delta_s >= 0.0){
 			vspeed_limit = audio_vario.get_vario_limit_upper();
 		}else{
 			vspeed_limit = -audio_vario.get_vario_limit_lower();
 		}
-		vario_input = (int16_t)( (delta_s/10.0) * vspeed_limit );
+		vario_input = (int16_t) ( (delta_s/7.7) * (float)vspeed_limit);
+		debug_dummy1 = smoothed_airspeed;
+		debug_dummy2 = xcsoar_data.speed_to_fly;
+		debug_dummy3 = vario_input;
 	}else{
 		// ordinary vario mode
 		vario_input = (int16_t)(vario_TE * 100);
+		debug_dummy1 = debug_dummy2 = debug_dummy3 = 0.0;
 	}
 	audio_vario.update(vario_input);
 }

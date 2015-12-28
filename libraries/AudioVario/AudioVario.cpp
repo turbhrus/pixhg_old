@@ -31,6 +31,11 @@ void AudioVario::update(int16_t vspeed)
 {
 	bool update_audio = false;
 
+	// don't sound vario if an alarm is playing
+	if( vario.alarm_sounding()){
+		return;
+	}
+
 	// Check for dead zone.
 	if( vspeed < deadzone_lower || vspeed > deadzone_upper){
 

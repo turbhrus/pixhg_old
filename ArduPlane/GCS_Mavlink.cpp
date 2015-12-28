@@ -25,8 +25,7 @@ void Plane::send_debugtext(mavlink_channel_t chan)
 	/////////////////////////////////////////////////////////
 	///// WRITE DEBUG MESSAGES HERE
 
-//    gcs_send_text_fmt(PSTR("compass heading %.1f deg"), (float)ahrs.yaw_sensor*0.01);
-	  plane.gcs_send_text_fmt(MAV_SEVERITY_INFO, " %.3f, : %.3f", debug_dummy1, debug_dummy2);
+	  plane.gcs_send_text_fmt(MAV_SEVERITY_INFO, "%.3f, %.3f, %.0f", debug_dummy1, debug_dummy2, debug_dummy3);
 	/////////////////////////////////////////////////////////
 }
 
@@ -53,7 +52,7 @@ void Plane::send_pixhawk_hg_med(mavlink_channel_t chan)
     // check for new airspeed update
     uint32_t t = airspeed.last_update_ms();
     if( t != as_last_update){
-		ias = airspeed.get_airspeed();
+		ias = smoothed_airspeed;
 		tas = get_true_airspeed();
 		as_last_update = t;
     }
@@ -1154,17 +1153,15 @@ void GCS_MAVLINK::handle_xcsoar_calculated_data(mavlink_message_t *msg)
 
 	plane.xcsoar_data.speed_to_fly = packet.speed_to_fly;
 	if( packet.current_turnpoint != plane.xcsoar_data.current_turnpoint){
-		/*
-		 * Sound the reached turnpoint signal
-		 */
+		// Sound the reached turnpoint signal
+		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_WAYPOINT_REACHED);
 		plane.xcsoar_data.current_turnpoint = packet.current_turnpoint;
 	}
 	plane.xcsoar_data.flying = packet.flying;
 	plane.xcsoar_data.circling = packet.circling;
 	if( packet.airspace_warning_idx != plane.xcsoar_data.airspace_warning_idx){
-		/*
-		 * Sound an airspace alarm
-		 */
+		// Sound an airspace alarm
+		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_AIRSPACE_WARNING);
 		plane.xcsoar_data.airspace_warning_idx = packet.airspace_warning_idx;
 	}
 	plane.xcsoar_data.terrain_warning = packet.terrain_warning;

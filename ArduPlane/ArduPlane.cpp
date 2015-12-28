@@ -220,12 +220,9 @@ void Plane::update_compass(void)
         if (should_log(MASK_LOG_COMPASS)) {
             DataFlash.Log_Write_Compass(compass);
         }
-        debug_dummy1 = 1;
     } else {
         ahrs.set_compass(NULL);
-        debug_dummy1 = 0;
     }
-    debug_dummy2 =  ahrs.yaw_sensor / 100;
 }
 
 /*
@@ -339,11 +336,11 @@ void Plane::one_second_loop()
 
 void Plane::log_perf_info()
 {
-    if (scheduler.debug() != 0) {
-        gcs_send_text_fmt(MAV_SEVERITY_INFO, "G_Dt_max=%lu G_Dt_min=%lu\n",
-                          (unsigned long)G_Dt_max, 
-                          (unsigned long)G_Dt_min);
-    }
+//    if (scheduler.debug() != 0) {
+//        gcs_send_text_fmt(MAV_SEVERITY_INFO, "G_Dt_max=%lu G_Dt_min=%lu\n",
+//                          (unsigned long)G_Dt_max,
+//                          (unsigned long)G_Dt_min);
+//    }
 
     if (should_log(MASK_LOG_PM)) {
         Log_Write_Performance();
@@ -401,7 +398,7 @@ void Plane::airspeed_ratio_update(void)
     }
     const Vector3f &vg = gps.velocity();
     airspeed.update_calibration(vg);
-    gcs_send_airspeed_calibration(vg);
+//    gcs_send_airspeed_calibration(vg);
 }
 
 

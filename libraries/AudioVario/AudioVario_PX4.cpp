@@ -36,9 +36,18 @@ extern const AP_HAL::HAL& hal;
 const char AudioVario_PX4::tone_names[12][3] =
 	{"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 
+const AudioVario_PX4::alarm_params AudioVario_PX4::_alarms[] {
+    { AUDIO_ALARM_NULL,              0, "",                             0 },
+    { AUDIO_ALARM_WAYPOINT_REACHED, 20, "MFT250L4O3AL16BCDEFG>ABCDEFL4G", 900 },
+    { AUDIO_ALARM_AIRSPACE_WARNING, 30, "MFT100L16>B<C>B<C>B<C>B",   1050 },
+    { AUDIO_ALARM_TERRAIN_WARNING,  40, "MFT200L2A-G-A-G-A-G-",       500 },
+};
+
 
 bool AudioVario_PX4::init()
 {
+	active_alarm = false;
+
     // open the tone alarm device
     _audiovario_fd = open(TONEALARM0_DEVICE_PATH, O_WRONLY);
     if (_audiovario_fd == -1) {
@@ -114,10 +123,46 @@ void AudioVario_PX4::stop_cont_tone() {
     _cont_tone_playing = -1;
 }
 
-void AudioVario_PX4::check_cont_tone() {
+/******************************
+ * Alarm related
+ ******************************/
+
+void AudioVario_PX4::trigger_alarm( uint8_t alarm_id){
+
+	bool start_new_alarm = false;
+
+	if( active_alarm == false){
+		// free to start the alarm
+		start_new_alarm = true;
+	}else{
+		if( _alarms[alarm_id].priority > _alarms[active_alarm_id].priority){
+			// this one is more important
+			start_new_alarm = true;
+		}
+	}
+	if( start_new_alarm){
+		active_alarm_id = alarm_id;
+		active_alarm = true;
+
+		// clear anything currently playing
+		play_string("stop");
+
+		// play
+		play_string( _alarms[active_alarm_id].str);
+		alarm_start_time_ms = AP_HAL::millis();
+	}
 }
 
+bool AudioVario_PX4::alarm_sounding(){
 
+	if( active_alarm){
+		// check for timeout
+		if( AP_HAL::millis() - alarm_start_time_ms > _alarms[active_alarm_id].duration_ms){
+			active_alarm = false;
+		}
+	}
+	return active_alarm;
+}
 
 //const ToneAlarm_PX4::Tone ToneAlarm_PX4::_tones[] {
 //    #define AP_NOTIFY_PX4_TONE_QUIET_NEG_FEEDBACK 0

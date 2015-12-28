@@ -21,6 +21,7 @@
 class AudioVario_PX4
 {
 public:
+
     // constructor
     AudioVario_PX4() : _audiovario_fd(-1) {}
 
@@ -31,6 +32,20 @@ public:
     // pos is true if vario > 0, false otherwise
     uint32_t beep(uint8_t note, uint16_t duration, bool pos);
 
+	/******************************
+	 * Alarm related
+	 ******************************/
+
+    // start a new alarm
+    void trigger_alarm(uint8_t alarm_id);
+
+    // check if an alarm is currently sounding
+    bool alarm_sounding();
+
+    #define AUDIO_ALARM_NULL             0
+	#define AUDIO_ALARM_WAYPOINT_REACHED 1
+	#define AUDIO_ALARM_AIRSPACE_WARNING 2
+	#define AUDIO_ALARM_TERRAIN_WARNING  3
 
 private:
 
@@ -69,6 +84,27 @@ private:
     };
 
     const static char tone_names[12][3];
+
+	/******************************
+	 * Alarm related
+	 ******************************/
+    // is alarm currently sounding?
+    bool active_alarm;
+
+    // ID of active alarm
+    uint8_t active_alarm_id;
+
+    uint32_t alarm_start_time_ms;
+
+    struct alarm_params{
+    	const uint8_t id;
+        const uint8_t priority;
+        const char *str;
+        const uint32_t duration_ms;
+    };
+
+    const static alarm_params _alarms[];
+
 };
 
 #endif // __AUDIO_VARIO_PX4_H__
