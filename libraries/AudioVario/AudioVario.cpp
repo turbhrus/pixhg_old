@@ -74,7 +74,7 @@ void AudioVario::vario_to_beep_params(int16_t _vspeed)
 		note = ((vspeed-deadzone_upper)*(max_note-zero_note)) /
 					(vertical_speed_upper-deadzone_upper) + zero_note;
 	}else{
-		note = ((vspeed-deadzone_lower)*(zero_note-min_note)) /
+		note = ((vspeed-vertical_speed_lower)*(zero_note-min_note)) /
 					(deadzone_lower-vertical_speed_lower) + min_note;
 	}
 	current_note = constrain_uint8( note, min_note, max_note);
