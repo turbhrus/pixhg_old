@@ -63,7 +63,7 @@
 //
 
 #ifndef FRSKY_TELEM_ENABLED
-#define FRSKY_TELEM_ENABLED ENABLED
+#define FRSKY_TELEM_ENABLED DISABLED
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@
 // SHORT_FAILSAFE_ACTION
 // LONG_FAILSAFE_ACTION
 #ifndef THROTTLE_FAILSAFE
- # define THROTTLE_FAILSAFE              ENABLED
+ # define THROTTLE_FAILSAFE              DISABLED
 #endif
 #ifndef THROTTLE_FS_VALUE
  # define THROTTLE_FS_VALUE              950
@@ -193,7 +193,7 @@
 // THROTTLE_OUT
 //
 #ifndef THROTTE_OUT
- # define THROTTLE_OUT                   ENABLED
+ # define THROTTLE_OUT                   DISABLED
 #endif
 
 
@@ -232,7 +232,7 @@
 //
 // uses 1182 bytes of memory
 #ifndef CAMERA
- # define CAMERA         ENABLED
+ # define CAMERA         DISABLED
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@
 //
 // uses 7726 bytes of memory on 2560 chips (all options are enabled)
 #ifndef MOUNT
-#define MOUNT          ENABLED
+#define MOUNT          DISABLED
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@
 
 // use this to disable geo-fencing
 #ifndef GEOFENCE_ENABLED
- # define GEOFENCE_ENABLED ENABLED
+ # define GEOFENCE_ENABLED DISABLED
 #endif
 
 // pwm value on FENCE_CHANNEL to use to enable fenced mode
@@ -410,10 +410,10 @@
 
 // OBC Failsafe enable
 #ifndef OBC_FAILSAFE
-#define OBC_FAILSAFE ENABLED
+#define OBC_FAILSAFE DISABLED
 #endif
 
-#define HIL_SUPPORT ENABLED
+#define HIL_SUPPORT DISABLED
 
 //////////////////////////////////////////////////////////////////////////////
 // Parachute release

@@ -207,13 +207,13 @@ void Plane::update_audio_vario()
 			vspeed_limit = -audio_vario.get_vario_limit_lower();
 		}
 		vario_input = (int16_t) ( (delta_s/7.7) * (float)vspeed_limit);
-		debug_dummy1 = smoothed_airspeed;
-		debug_dummy2 = xcsoar_data.speed_to_fly;
-		debug_dummy3 = vario_input;
+//		debug_dummy1 = smoothed_airspeed;
+//		debug_dummy2 = xcsoar_data.speed_to_fly;
+//		debug_dummy3 = vario_input;
 	}else{
 		// ordinary vario mode
 		vario_input = (int16_t)(vario_TE * 100);
-		debug_dummy1 = debug_dummy2 = debug_dummy3 = 0.0;
+//		debug_dummy1 = debug_dummy2 = debug_dummy3 = 0.0;
 	}
 	audio_vario.update(vario_input);
 }

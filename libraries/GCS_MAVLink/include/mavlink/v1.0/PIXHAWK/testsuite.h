@@ -2803,7 +2803,7 @@ static void mavlink_test_pixhawk_hg_slow(uint8_t system_id, uint8_t component_id
     };
 	mavlink_pixhawk_hg_slow_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
-        	packet1.gps_time_us = packet_in.gps_time_us;
+        	packet1.gps_time_sec = packet_in.gps_time_sec;
         	packet1.gps_alt = packet_in.gps_alt;
         	packet1.temperature = packet_in.temperature;
         	packet1.wind_n = packet_in.wind_n;
@@ -2822,12 +2822,12 @@ static void mavlink_test_pixhawk_hg_slow(uint8_t system_id, uint8_t component_id
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_pixhawk_hg_slow_pack(system_id, component_id, &msg , packet1.gps_time_us , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
+	mavlink_msg_pixhawk_hg_slow_pack(system_id, component_id, &msg , packet1.gps_time_sec , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
 	mavlink_msg_pixhawk_hg_slow_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_pixhawk_hg_slow_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.gps_time_us , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
+	mavlink_msg_pixhawk_hg_slow_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.gps_time_sec , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
 	mavlink_msg_pixhawk_hg_slow_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
@@ -2840,7 +2840,7 @@ static void mavlink_test_pixhawk_hg_slow(uint8_t system_id, uint8_t component_id
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
         
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_pixhawk_hg_slow_send(MAVLINK_COMM_1 , packet1.gps_time_us , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
+	mavlink_msg_pixhawk_hg_slow_send(MAVLINK_COMM_1 , packet1.gps_time_sec , packet1.eph , packet1.gps_alt , packet1.gps_fix_type , packet1.satellites_visible , packet1.temperature , packet1.humidity , packet1.wind_n , packet1.wind_e , packet1.wind_d );
 	mavlink_msg_pixhawk_hg_slow_decode(last_msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 }

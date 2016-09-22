@@ -4,7 +4,7 @@
 
 typedef struct __mavlink_pixhawk_hg_slow_t
 {
- uint64_t gps_time_us; /*< time since 1st Jan 1970 in microseconds*/
+ uint64_t gps_time_sec; /*< time since 1st Jan 1970 in seconds*/
  int32_t gps_alt; /*< Altitude (WGS84), in mm (positive for up)*/
  float temperature; /*< Temperature in degrees celsius*/
  float wind_n; /*< Wind North +ve (m/s)*/
@@ -19,15 +19,15 @@ typedef struct __mavlink_pixhawk_hg_slow_t
 #define MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN 33
 #define MAVLINK_MSG_ID_232_LEN 33
 
-#define MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_CRC 187
-#define MAVLINK_MSG_ID_232_CRC 187
+#define MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_CRC 188
+#define MAVLINK_MSG_ID_232_CRC 188
 
 
 
 #define MAVLINK_MESSAGE_INFO_PIXHAWK_HG_SLOW { \
 	"PIXHAWK_HG_SLOW", \
 	10, \
-	{  { "gps_time_us", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_pixhawk_hg_slow_t, gps_time_us) }, \
+	{  { "gps_time_sec", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_pixhawk_hg_slow_t, gps_time_sec) }, \
          { "gps_alt", NULL, MAVLINK_TYPE_INT32_T, 0, 8, offsetof(mavlink_pixhawk_hg_slow_t, gps_alt) }, \
          { "temperature", NULL, MAVLINK_TYPE_FLOAT, 0, 12, offsetof(mavlink_pixhawk_hg_slow_t, temperature) }, \
          { "wind_n", NULL, MAVLINK_TYPE_FLOAT, 0, 16, offsetof(mavlink_pixhawk_hg_slow_t, wind_n) }, \
@@ -47,7 +47,7 @@ typedef struct __mavlink_pixhawk_hg_slow_t
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param gps_time_us time since 1st Jan 1970 in microseconds
+ * @param gps_time_sec time since 1st Jan 1970 in seconds
  * @param eph PS HDOP horizontal dilution of position in cm (m*100). If unknown, set to: UINT16_MAX
  * @param gps_alt Altitude (WGS84), in mm (positive for up)
  * @param gps_fix_type 0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.
@@ -60,11 +60,11 @@ typedef struct __mavlink_pixhawk_hg_slow_t
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-						       uint64_t gps_time_us, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
+						       uint64_t gps_time_sec, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN];
-	_mav_put_uint64_t(buf, 0, gps_time_us);
+	_mav_put_uint64_t(buf, 0, gps_time_sec);
 	_mav_put_int32_t(buf, 8, gps_alt);
 	_mav_put_float(buf, 12, temperature);
 	_mav_put_float(buf, 16, wind_n);
@@ -78,7 +78,7 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack(uint8_t system_id, uint8
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN);
 #else
 	mavlink_pixhawk_hg_slow_t packet;
-	packet.gps_time_us = gps_time_us;
+	packet.gps_time_sec = gps_time_sec;
 	packet.gps_alt = gps_alt;
 	packet.temperature = temperature;
 	packet.wind_n = wind_n;
@@ -106,7 +106,7 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack(uint8_t system_id, uint8
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param gps_time_us time since 1st Jan 1970 in microseconds
+ * @param gps_time_sec time since 1st Jan 1970 in seconds
  * @param eph PS HDOP horizontal dilution of position in cm (m*100). If unknown, set to: UINT16_MAX
  * @param gps_alt Altitude (WGS84), in mm (positive for up)
  * @param gps_fix_type 0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.
@@ -120,11 +120,11 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack(uint8_t system_id, uint8
  */
 static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
 							   mavlink_message_t* msg,
-						           uint64_t gps_time_us,uint16_t eph,int32_t gps_alt,uint8_t gps_fix_type,uint8_t satellites_visible,float temperature,uint8_t humidity,float wind_n,float wind_e,float wind_d)
+						           uint64_t gps_time_sec,uint16_t eph,int32_t gps_alt,uint8_t gps_fix_type,uint8_t satellites_visible,float temperature,uint8_t humidity,float wind_n,float wind_e,float wind_d)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN];
-	_mav_put_uint64_t(buf, 0, gps_time_us);
+	_mav_put_uint64_t(buf, 0, gps_time_sec);
 	_mav_put_int32_t(buf, 8, gps_alt);
 	_mav_put_float(buf, 12, temperature);
 	_mav_put_float(buf, 16, wind_n);
@@ -138,7 +138,7 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack_chan(uint8_t system_id, 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN);
 #else
 	mavlink_pixhawk_hg_slow_t packet;
-	packet.gps_time_us = gps_time_us;
+	packet.gps_time_sec = gps_time_sec;
 	packet.gps_alt = gps_alt;
 	packet.temperature = temperature;
 	packet.wind_n = wind_n;
@@ -170,7 +170,7 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_pack_chan(uint8_t system_id, 
  */
 static inline uint16_t mavlink_msg_pixhawk_hg_slow_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_pixhawk_hg_slow_t* pixhawk_hg_slow)
 {
-	return mavlink_msg_pixhawk_hg_slow_pack(system_id, component_id, msg, pixhawk_hg_slow->gps_time_us, pixhawk_hg_slow->eph, pixhawk_hg_slow->gps_alt, pixhawk_hg_slow->gps_fix_type, pixhawk_hg_slow->satellites_visible, pixhawk_hg_slow->temperature, pixhawk_hg_slow->humidity, pixhawk_hg_slow->wind_n, pixhawk_hg_slow->wind_e, pixhawk_hg_slow->wind_d);
+	return mavlink_msg_pixhawk_hg_slow_pack(system_id, component_id, msg, pixhawk_hg_slow->gps_time_sec, pixhawk_hg_slow->eph, pixhawk_hg_slow->gps_alt, pixhawk_hg_slow->gps_fix_type, pixhawk_hg_slow->satellites_visible, pixhawk_hg_slow->temperature, pixhawk_hg_slow->humidity, pixhawk_hg_slow->wind_n, pixhawk_hg_slow->wind_e, pixhawk_hg_slow->wind_d);
 }
 
 /**
@@ -184,14 +184,14 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_encode(uint8_t system_id, uin
  */
 static inline uint16_t mavlink_msg_pixhawk_hg_slow_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_pixhawk_hg_slow_t* pixhawk_hg_slow)
 {
-	return mavlink_msg_pixhawk_hg_slow_pack_chan(system_id, component_id, chan, msg, pixhawk_hg_slow->gps_time_us, pixhawk_hg_slow->eph, pixhawk_hg_slow->gps_alt, pixhawk_hg_slow->gps_fix_type, pixhawk_hg_slow->satellites_visible, pixhawk_hg_slow->temperature, pixhawk_hg_slow->humidity, pixhawk_hg_slow->wind_n, pixhawk_hg_slow->wind_e, pixhawk_hg_slow->wind_d);
+	return mavlink_msg_pixhawk_hg_slow_pack_chan(system_id, component_id, chan, msg, pixhawk_hg_slow->gps_time_sec, pixhawk_hg_slow->eph, pixhawk_hg_slow->gps_alt, pixhawk_hg_slow->gps_fix_type, pixhawk_hg_slow->satellites_visible, pixhawk_hg_slow->temperature, pixhawk_hg_slow->humidity, pixhawk_hg_slow->wind_n, pixhawk_hg_slow->wind_e, pixhawk_hg_slow->wind_d);
 }
 
 /**
  * @brief Send a pixhawk_hg_slow message
  * @param chan MAVLink channel to send the message
  *
- * @param gps_time_us time since 1st Jan 1970 in microseconds
+ * @param gps_time_sec time since 1st Jan 1970 in seconds
  * @param eph PS HDOP horizontal dilution of position in cm (m*100). If unknown, set to: UINT16_MAX
  * @param gps_alt Altitude (WGS84), in mm (positive for up)
  * @param gps_fix_type 0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.
@@ -204,11 +204,11 @@ static inline uint16_t mavlink_msg_pixhawk_hg_slow_encode_chan(uint8_t system_id
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_pixhawk_hg_slow_send(mavlink_channel_t chan, uint64_t gps_time_us, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
+static inline void mavlink_msg_pixhawk_hg_slow_send(mavlink_channel_t chan, uint64_t gps_time_sec, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_PIXHAWK_HG_SLOW_LEN];
-	_mav_put_uint64_t(buf, 0, gps_time_us);
+	_mav_put_uint64_t(buf, 0, gps_time_sec);
 	_mav_put_int32_t(buf, 8, gps_alt);
 	_mav_put_float(buf, 12, temperature);
 	_mav_put_float(buf, 16, wind_n);
@@ -226,7 +226,7 @@ static inline void mavlink_msg_pixhawk_hg_slow_send(mavlink_channel_t chan, uint
 #endif
 #else
 	mavlink_pixhawk_hg_slow_t packet;
-	packet.gps_time_us = gps_time_us;
+	packet.gps_time_sec = gps_time_sec;
 	packet.gps_alt = gps_alt;
 	packet.temperature = temperature;
 	packet.wind_n = wind_n;
@@ -253,11 +253,11 @@ static inline void mavlink_msg_pixhawk_hg_slow_send(mavlink_channel_t chan, uint
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_pixhawk_hg_slow_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t gps_time_us, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
+static inline void mavlink_msg_pixhawk_hg_slow_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t gps_time_sec, uint16_t eph, int32_t gps_alt, uint8_t gps_fix_type, uint8_t satellites_visible, float temperature, uint8_t humidity, float wind_n, float wind_e, float wind_d)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char *buf = (char *)msgbuf;
-	_mav_put_uint64_t(buf, 0, gps_time_us);
+	_mav_put_uint64_t(buf, 0, gps_time_sec);
 	_mav_put_int32_t(buf, 8, gps_alt);
 	_mav_put_float(buf, 12, temperature);
 	_mav_put_float(buf, 16, wind_n);
@@ -275,7 +275,7 @@ static inline void mavlink_msg_pixhawk_hg_slow_send_buf(mavlink_message_t *msgbu
 #endif
 #else
 	mavlink_pixhawk_hg_slow_t *packet = (mavlink_pixhawk_hg_slow_t *)msgbuf;
-	packet->gps_time_us = gps_time_us;
+	packet->gps_time_sec = gps_time_sec;
 	packet->gps_alt = gps_alt;
 	packet->temperature = temperature;
 	packet->wind_n = wind_n;
@@ -301,11 +301,11 @@ static inline void mavlink_msg_pixhawk_hg_slow_send_buf(mavlink_message_t *msgbu
 
 
 /**
- * @brief Get field gps_time_us from pixhawk_hg_slow message
+ * @brief Get field gps_time_sec from pixhawk_hg_slow message
  *
- * @return time since 1st Jan 1970 in microseconds
+ * @return time since 1st Jan 1970 in seconds
  */
-static inline uint64_t mavlink_msg_pixhawk_hg_slow_get_gps_time_us(const mavlink_message_t* msg)
+static inline uint64_t mavlink_msg_pixhawk_hg_slow_get_gps_time_sec(const mavlink_message_t* msg)
 {
 	return _MAV_RETURN_uint64_t(msg,  0);
 }
@@ -409,7 +409,7 @@ static inline float mavlink_msg_pixhawk_hg_slow_get_wind_d(const mavlink_message
 static inline void mavlink_msg_pixhawk_hg_slow_decode(const mavlink_message_t* msg, mavlink_pixhawk_hg_slow_t* pixhawk_hg_slow)
 {
 #if MAVLINK_NEED_BYTE_SWAP
-	pixhawk_hg_slow->gps_time_us = mavlink_msg_pixhawk_hg_slow_get_gps_time_us(msg);
+	pixhawk_hg_slow->gps_time_sec = mavlink_msg_pixhawk_hg_slow_get_gps_time_sec(msg);
 	pixhawk_hg_slow->gps_alt = mavlink_msg_pixhawk_hg_slow_get_gps_alt(msg);
 	pixhawk_hg_slow->temperature = mavlink_msg_pixhawk_hg_slow_get_temperature(msg);
 	pixhawk_hg_slow->wind_n = mavlink_msg_pixhawk_hg_slow_get_wind_n(msg);

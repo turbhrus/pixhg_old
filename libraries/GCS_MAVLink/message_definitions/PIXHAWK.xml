@@ -966,7 +966,7 @@
 
 	  <message name="PIXHAWK_HG_SLOW" id="232">
 	    <description>Misc. data packet, infrequent updates</description>
-	    <field type="uint64_t" name="gps_time_us">time since 1st Jan 1970 in microseconds</field>
+	    <field type="uint64_t" name="gps_time_sec">time since 1st Jan 1970 in seconds</field>
 	    <field type="uint16_t" name="eph">PS HDOP horizontal dilution of position in cm (m*100). If unknown, set to: UINT16_MAX</field>
 	    <field type="int32_t" name="gps_alt">Altitude (WGS84), in mm (positive for up)</field>
 	    <field type="uint8_t" name="gps_fix_type">0-1: no fix, 2: 2D fix, 3: 3D fix. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.</field>

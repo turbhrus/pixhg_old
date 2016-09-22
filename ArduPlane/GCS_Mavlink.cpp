@@ -25,7 +25,7 @@ void Plane::send_debugtext(mavlink_channel_t chan)
 	/////////////////////////////////////////////////////////
 	///// WRITE DEBUG MESSAGES HERE
 
-	  plane.gcs_send_text_fmt(MAV_SEVERITY_INFO, "%.3f, %.3f, %.0f", debug_dummy1, debug_dummy2, debug_dummy3);
+//	  plane.gcs_send_text_fmt(MAV_SEVERITY_INFO, "%ld seconds", (long int)debug_dummy1);
 	/////////////////////////////////////////////////////////
 }
 
@@ -82,10 +82,11 @@ void Plane::send_pixhawk_hg_slow(mavlink_channel_t chan)
     if( ! airspeed.get_temperature(temperature)){
     	temperature = barometer.get_temperature();
     }
+    uint64_t gps_time = gps.time_epoch_usec() / 1000000;
 
     mavlink_msg_pixhawk_hg_slow_send(
     	chan,
-    	gps.time_epoch_usec(),
+    	gps_time,
     	gps.get_hdop(),
     	loc.alt * 10, // in mm
     	gps.status(),
@@ -96,6 +97,31 @@ void Plane::send_pixhawk_hg_slow(mavlink_channel_t chan)
         wind.y,  // East +ve
         0); // Down +ve (not implemented)
 
+    debug_dummy1 =  (float)gps.time_epoch_usec() * 1e-6;
+}
+
+/*
+  Read and process data from XCSoar
+ */
+void GCS_MAVLINK::handle_xcsoar_calculated_data(mavlink_message_t *msg)
+{
+	mavlink_xcsoar_calculated_t packet;
+	mavlink_msg_xcsoar_calculated_decode(msg, &packet);
+
+	plane.xcsoar_data.speed_to_fly = packet.speed_to_fly;
+	if( packet.current_turnpoint != plane.xcsoar_data.current_turnpoint){
+		// Sound the reached turnpoint signal
+		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_WAYPOINT_REACHED);
+		plane.xcsoar_data.current_turnpoint = packet.current_turnpoint;
+	}
+	plane.xcsoar_data.flying = packet.flying;
+	plane.xcsoar_data.circling = packet.circling;
+	if( packet.airspace_warning_idx != plane.xcsoar_data.airspace_warning_idx){
+		// Sound an airspace alarm
+		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_AIRSPACE_WARNING);
+		plane.xcsoar_data.airspace_warning_idx = packet.airspace_warning_idx;
+	}
+	plane.xcsoar_data.terrain_warning = packet.terrain_warning;
 }
 
 void Plane::send_attitude(mavlink_channel_t chan)
@@ -1143,29 +1169,6 @@ void GCS_MAVLINK::handle_change_alt_request(AP_Mission::Mission_Command &cmd)
     plane.reset_offset_altitude();
 }
 
-/*
-  Read and process data from XCSoar
- */
-void GCS_MAVLINK::handle_xcsoar_calculated_data(mavlink_message_t *msg)
-{
-	mavlink_xcsoar_calculated_t packet;
-	mavlink_msg_xcsoar_calculated_decode(msg, &packet);
-
-	plane.xcsoar_data.speed_to_fly = packet.speed_to_fly;
-	if( packet.current_turnpoint != plane.xcsoar_data.current_turnpoint){
-		// Sound the reached turnpoint signal
-		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_WAYPOINT_REACHED);
-		plane.xcsoar_data.current_turnpoint = packet.current_turnpoint;
-	}
-	plane.xcsoar_data.flying = packet.flying;
-	plane.xcsoar_data.circling = packet.circling;
-	if( packet.airspace_warning_idx != plane.xcsoar_data.airspace_warning_idx){
-		// Sound an airspace alarm
-		plane.audio_vario.vario.trigger_alarm( AUDIO_ALARM_AIRSPACE_WARNING);
-		plane.xcsoar_data.airspace_warning_idx = packet.airspace_warning_idx;
-	}
-	plane.xcsoar_data.terrain_warning = packet.terrain_warning;
-}
 
 void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 {

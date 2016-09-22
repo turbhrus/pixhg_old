@@ -144,7 +144,7 @@ public:
 //        }
         _ins.set_board_orientation((enum Rotation)0);
         if (_compass != NULL) {
-            _compass->set_board_orientation((enum Rotation)0);
+            _compass->set_board_orientation((enum Rotation)7);
         }
     }
 

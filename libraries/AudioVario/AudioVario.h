@@ -61,7 +61,7 @@ public:
 
 	// constructor
 	AudioVario() : vertical_speed_lower(-500), vertical_speed_upper(500),
-				   deadzone_lower(-50), deadzone_upper(25),
+				   deadzone_lower(-250), deadzone_upper(5),
 				   vertical_speed(0),
 				   current_beep_duration(0),
 				   current_beep_start(0) {}
